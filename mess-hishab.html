@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>মেস হিসাব</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+* { box-sizing: border-box; }
+
+#mh-root {
+  --paper: #F7F1E2;
+  --paper-dark: #EFE5C9;
+  --card: #FFFDF7;
+  --card-highlight: #FFFFFF;
+  --ink: #2B2620;
+  --ink-soft: #7A6F5C;
+  --rule: #CBBFA0;
+  --green: #2F6F4E;
+  --green-soft: #E3EEE6;
+  --rust: #B5482F;
+  --rust-soft: #F6E4DD;
+  --gold: #D9A441;
+  --gold-dark: #B9852A;
+  --navy: #2B3A55;
+  --cover: #2B2620;
+  font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100%;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#mh-root.mh-dark {
+  --paper: #1E1B16;
+  --paper-dark: #262119;
+  --card: #2A251E;
+  --card-highlight: #342E24;
+  --ink: #ECE4D2;
+  --ink-soft: #A79A82;
+  --rule: #453E30;
+  --green: #55B685;
+  --green-soft: #203327;
+  --rust: #E4886A;
+  --rust-soft: #3A2620;
+  --gold: #ECBE68;
+  --gold-dark: #C99A3E;
+  --navy: #8FA8D0;
+  --cover: #131110;
+}
+
+#mh-root .mh-serif { font-family: 'Tiro Bangla', 'Noto Serif Bengali', serif; }
+#mh-root .mh-mono { font-family: 'JetBrains Mono', monospace; }
+
+#mh-root .mh-shell { max-width: 720px; margin: 0 auto; padding: 16px 14px 60px; }
+
+/* ---------- HEADER ---------- */
+#mh-root .mh-header {
+  background: var(--cover);
+  background-image: linear-gradient(135deg, #2B2620 0%, #3A3226 100%);
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  color: var(--paper);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+#mh-root .mh-header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(90deg, rgba(217,164,65,0.06) 0 1px, transparent 1px 22px);
+  pointer-events: none;
+}
+#mh-root .mh-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#mh-root .mh-title { font-family: 'Tiro Bangla', serif; font-size: 22px; letter-spacing: 0.3px; color: var(--gold); }
+#mh-root .mh-subtitle { font-size: 12px; color: #D8CFB8; margin-top: 2px; }
+#mh-root .mh-lock-btn {
+  background: rgba(217,164,65,0.15);
+  border: 1px solid rgba(217,164,65,0.5);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+}
+#mh-root .mh-lock-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+
+#mh-root .mh-manager-badge {
+  margin-top: 10px; font-size: 12px; color: #EADFC0; background: rgba(217,164,65,0.12);
+  border: 1px solid rgba(217,164,65,0.35); border-radius: 8px; padding: 6px 10px; display:inline-block;
+}
+#mh-root .mh-manager-badge b { color: var(--gold); font-weight:700; }
+
+#mh-root .mh-month-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px; background: rgba(255,255,255,0.06);
+  border-radius: 10px; padding: 6px 6px;
+}
+#mh-root .mh-month-btn {
+  background: transparent; border: none; color: var(--paper);
+  font-size: 18px; padding: 4px 12px; cursor: pointer; border-radius: 8px;
+}
+#mh-root .mh-month-btn:active { background: rgba(255,255,255,0.1); }
+#mh-root .mh-month-label { font-family: 'Tiro Bangla', serif; font-size: 15.5px; color: #fff; }
+
+#mh-root .mh-sync-row { display:flex; align-items:center; gap:6px; font-size:11px; color:#B8AE95; margin-top:8px; }
+#mh-root .mh-sync-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(47,111,78,0.6); animation: mh-pulse 2s infinite; }
+@keyframes mh-pulse { 0%{box-shadow:0 0 0 0 rgba(47,111,78,0.5);} 70%{box-shadow:0 0 0 6px rgba(47,111,78,0);} 100%{box-shadow:0 0 0 0 rgba(47,111,78,0);} }
+
+/* ---------- TABS ---------- */
+#mh-root .mh-tabs {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px;
+  scrollbar-width: none;
+}
+#mh-root .mh-tabs::-webkit-scrollbar { display: none; }
+#mh-root .mh-tab {
+  flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--rule);
+  background: var(--card); color: var(--ink-soft); font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+#mh-root .mh-tab.active { background: var(--cover); color: var(--gold); border-color: var(--cover); }
+
+/* ---------- CARDS / SECTIONS ---------- */
+#mh-root .mh-section-title {
+  font-family: 'Tiro Bangla', serif; font-size: 17px; margin: 4px 0 10px; display:flex; align-items:center; gap:8px;
+}
+#mh-root .mh-section-title .mh-eyebrow {
+  font-family: 'Hind Siliguri', sans-serif; font-size: 10.5px; letter-spacing: 0.5px; color: var(--gold-dark);
+  background: #F1DFB4; padding: 2px 8px; border-radius: 5px; font-weight:700;
+}
+#mh-root .mh-card {
+  background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px;
+  margin-bottom: 14px;
+}
+
+/* summary stat strip */
+#mh-root .mh-stat-strip { display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-bottom:16px; }
+#mh-root .mh-stat { background: var(--card); border:1px solid var(--rule); border-radius:10px; padding:10px 8px; text-align:center; }
+#mh-root .mh-stat .mh-stat-num { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:var(--navy); }
+#mh-root .mh-stat .mh-stat-label { font-size:10px; color:var(--ink-soft); margin-top:2px; }
+
+/* remaining-fund hero */
+#mh-root .mh-fund-card { border:1.5px solid var(--rule); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px; }
+#mh-root .mh-fund-label { font-size:12px; color:var(--ink-soft); font-weight:600; margin-bottom:4px; }
+#mh-root .mh-fund-amount { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; }
+#mh-root .mh-fund-sub { font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
+
+/* hanging tag cards (signature element) */
+#mh-root .mh-rack { margin: 30px 4px 0; position: relative; }
+#mh-root .mh-rail {
+  height: 5px; border-radius: 4px; position: relative;
+  background: linear-gradient(90deg, var(--ink-soft), var(--rule) 8%, var(--rule) 92%, var(--ink-soft));
+  box-shadow: 0 2px 3px rgba(43,38,32,0.15);
+}
+#mh-root .mh-rail::before, #mh-root .mh-rail::after {
+  content:''; position:absolute; top:-4px; width:13px; height:13px; border-radius:50%;
+  background: var(--ink-soft); box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+#mh-root .mh-rail::before { left:-2px; }
+#mh-root .mh-rail::after { right:-2px; }
+#mh-root .mh-tag-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: 24px 12px; padding-top: 24px; }
+#mh-root .mh-tag {
+  position: relative; background: var(--card);
+  background-image: linear-gradient(165deg, var(--card-highlight) 0%, var(--card) 55%);
+  border: 1px solid var(--rule);
+  border-radius: 5px 5px 12px 12px;
+  padding: 16px 12px 12px; text-align:center;
+  box-shadow: 0 3px 0 rgba(203,191,160,0.35), 0 8px 16px -8px rgba(43,38,32,0.35);
+}
+#mh-root .mh-tag::before {
+  content:''; position:absolute; top:-24px; left:50%; width:2px; height:24px; background: var(--ink-soft); opacity:0.55; transform:translateX(-50%);
+}
+#mh-root .mh-tag::after {
+  content:''; position:absolute; top:-29px; left:50%; width:10px; height:10px; border-radius:50%;
+  background: var(--paper); border: 2px solid var(--ink-soft); transform:translateX(-50%);
+  box-shadow: 0 1px 2px rgba(43,38,32,0.25);
+}
+#mh-root .mh-tag-avatar-row { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+#mh-root .mh-tag-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Tiro Bangla',serif; font-size:15px; font-weight:700; color:#fff;
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.15), 0 2px 4px rgba(43,38,32,0.2);
+}
+#mh-root .mh-tag-name { font-weight:700; font-size:13.5px; text-align:left; line-height:1.2; }
+#mh-root .mh-tag-name .mh-tag-archived-badge { display:block; font-size:9.5px; font-weight:600; color: var(--ink-soft); margin-top:1px; }
+#mh-root .mh-tag-balance { font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px; }
+#mh-root .mh-tag-balance .mh-arrow { font-size:14px; }
+#mh-root .mh-tag-status { font-size:10.5px; margin-top:3px; font-weight:600; letter-spacing:0.2px; }
+#mh-root .mh-tag-meta { font-size:10.5px; color: var(--ink-soft); margin-top:10px; display:flex; justify-content:space-between; border-top:1px dashed var(--rule); padding-top:7px; }
+
+/* tables */
+#mh-root .mh-table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; }
+#mh-root table.mh-table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 13px; }
+#mh-root table.mh-table th, #mh-root table.mh-table td {
+  border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule);
+  padding: 7px 6px; text-align: center; white-space: nowrap;
+}
+#mh-root table.mh-table th:last-child, #mh-root table.mh-table td:last-child { border-right: none; }
+#mh-root table.mh-table thead th {
+  background: var(--paper-dark); font-family:'Tiro Bangla',serif; font-weight:400; font-size:13px; position: sticky; top:0;
+}
+#mh-root table.mh-table td.mh-date-cell { text-align:left; color: var(--ink-soft); font-family:'JetBrains Mono',monospace; font-size:12px; background: var(--paper); }
+#mh-root table.mh-table tr.mh-today td { background: #FBF0D6; }
+#mh-root table.mh-table tfoot td { background: var(--paper-dark); font-weight:700; font-family:'JetBrains Mono',monospace; }
+#mh-root .mh-meal-input {
+  width: 40px; text-align:center; border:1px solid var(--rule); border-radius:6px; padding:4px 2px;
+  font-family:'JetBrains Mono',monospace; font-size:13px; background:#fff; color:#111;
+}
+#mh-root .mh-meal-input:disabled { background: transparent; border-color:transparent; color: var(--ink); }
+
+/* forms */
+#mh-root .mh-form-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+#mh-root .mh-field { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+#mh-root .mh-field label { font-size:11.5px; color: var(--ink-soft); font-weight:600; }
+#mh-root .mh-field input, #mh-root .mh-field select, #mh-root .mh-field textarea {
+  border:1px solid var(--rule); border-radius:8px; padding:9px 10px; font-size:14px; background:#fff; color:#161310;
+  font-family:'Hind Siliguri',sans-serif;
+}
+#mh-root .mh-btn {
+  border:none; border-radius:9px; padding:10px 16px; font-weight:700; font-size:13.5px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; justify-content:center;
+}
+#mh-root .mh-btn-primary { background: var(--green); color:#fff; }
+#mh-root .mh-btn-primary:active { background:#255c40; }
+#mh-root .mh-btn-ghost { background: transparent; color: var(--ink-soft); border:1px solid var(--rule); }
+#mh-root .mh-btn-danger { background: var(--rust-soft); color: var(--rust); }
+#mh-root .mh-btn-block { width:100%; }
+#mh-root .mh-btn-sm { padding:6px 10px; font-size:12px; }
+
+#mh-root .mh-list-row {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:10px 4px; border-bottom:1px solid var(--rule);
+}
+#mh-root .mh-list-row:last-child { border-bottom:none; }
+#mh-root .mh-list-main { font-size:13.5px; font-weight:600; }
+#mh-root .mh-list-sub { font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+#mh-root .mh-list-amt { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px; }
+#mh-root .mh-chip { font-size:10.5px; background: var(--green-soft); color:var(--green); padding:2px 8px; border-radius:999px; font-weight:700; }
+#mh-root .mh-icon-btn { background:none; border:none; color: var(--ink-soft); font-size:16px; cursor:pointer; padding:4px 6px; }
+
+#mh-root .mh-empty { text-align:center; padding:30px 10px; color: var(--ink-soft); font-size:13px; }
+#mh-root .mh-empty .mh-serif { font-size:15px; color:var(--ink); display:block; margin-bottom:4px; }
+
+/* modal */
+#mh-root .mh-overlay {
+  position: fixed; inset:0; background: rgba(20,17,14,0.6); display:flex; align-items:center; justify-content:center;
+  z-index: 1000; padding: 20px;
+}
+#mh-root .mh-modal {
+  background: var(--card); border-radius: 14px; padding: 20px; max-width: 340px; width:100%;
+  border: 1px solid var(--rule); max-height: 88vh; overflow-y: auto;
+}
+#mh-root .mh-modal h3 { font-family:'Tiro Bangla',serif; font-size:17px; margin:0 0 4px; }
+#mh-root .mh-modal p { font-size:12.5px; color:var(--ink-soft); margin:0 0 14px; }
+#mh-root .mh-toast {
+  position: fixed; bottom: 18px; left:50%; transform:translateX(-50%);
+  background: var(--cover); color: var(--gold); padding:10px 18px; border-radius:999px; font-size:12.5px;
+  font-weight:600; z-index:1100; box-shadow: 0 6px 18px rgba(0,0,0,0.25); max-width:88vw; text-align:center;
+}
+#mh-root .mh-note-banner {
+  background: #F1DFB4; color: #6B4E1B; border-radius: 10px; padding: 9px 12px;
+  font-size: 12px; margin-bottom: 14px; display:flex; gap:8px; align-items:flex-start;
+}
+
+/* onboarding */
+#mh-root .mh-onboard-hero {
+  text-align:center; padding: 30px 16px 22px; margin-bottom: 6px;
+  background: var(--cover); background-image: radial-gradient(circle at 50% 0%, #3A3226 0%, #2B2620 70%);
+  border-radius: 16px; color: var(--paper);
+}
+#mh-root .mh-onboard-icon { font-size: 34px; margin-bottom: 8px; }
+#mh-root .mh-onboard-title { font-family:'Tiro Bangla',serif; font-size: 20px; color: var(--gold); margin-bottom: 6px; }
+#mh-root .mh-onboard-sub { font-size: 12.5px; color: #D8CFB8; max-width: 320px; margin: 0 auto; line-height:1.6; }
+#mh-root .mh-chip-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+#mh-root .mh-chip-item {
+  display:inline-flex; align-items:center; gap:6px; background: var(--green-soft); color: var(--green);
+  border-radius: 999px; padding: 6px 6px 6px 12px; font-size:12.5px; font-weight:600;
+}
+#mh-root .mh-chip-item button {
+  background: rgba(47,111,78,0.15); border:none; color: var(--green); width:18px; height:18px; border-radius:50%;
+  font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+
+/* settings: theme / language segmented toggles */
+#mh-root .mh-seg { display:flex; gap:8px; }
+#mh-root .mh-seg button {
+  flex:1; padding:10px; border-radius:9px; border:1px solid var(--rule); background:var(--card);
+  color:var(--ink-soft); font-weight:700; font-size:13px; cursor:pointer;
+}
+#mh-root .mh-seg button.active { background: var(--cover); color: var(--gold); border-color: var(--cover); }
+#mh-root .mh-history-row { display:flex; justify-content:space-between; font-size:12px; padding:7px 0; border-bottom:1px dashed var(--rule); }
+#mh-root .mh-history-row:last-child { border-bottom:none; }
+#mh-root .mh-history-row .mh-h-name { font-weight:700; }
+#mh-root .mh-history-row .mh-h-date { color: var(--ink-soft); }
+
+/* print report (hidden on screen, shown only when printing) */
+#mh-root .mh-print-only { display:none; }
+.mh-print-report { font-family:'Hind Siliguri',sans-serif; color:#111; background:#fff; padding:12px; }
+.mh-print-report h1 { font-family:'Tiro Bangla',serif; font-size:20px; margin:0 0 4px; }
+.mh-print-report .mh-print-meta { font-size:12px; color:#333; margin-bottom:16px; line-height:1.6; }
+.mh-print-report table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:12px; }
+.mh-print-report th, .mh-print-report td { border:1px solid #999; padding:5px 7px; text-align:left; }
+.mh-print-report th { background:#eee; }
+.mh-print-report .mh-print-section-title { font-family:'Tiro Bangla',serif; font-size:14px; margin:16px 0 6px; }
+@media print {
+  body * { visibility: hidden !important; }
+  #mh-print-report, #mh-print-report * { visibility: visible !important; }
+  #mh-print-report { position:absolute; left:0; top:0; width:100%; display:block !important; }
+}
+
+@media (max-width: 380px) {
+  #mh-root .mh-stat-strip { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+
+<div id="mh-root">
+  <div class="mh-shell" id="mh-shell">
+    <div style="text-align:center;padding:60px 10px;color:#7A6F5C;">খাতা খোলা হচ্ছে...</div>
+  </div>
+</div>
+
+<script>
+/* ---------------- LOCAL STORAGE POLYFILL ----------------
+   এই অ্যাপটি মূলত Claude.ai-এর window.storage API এর জন্য বানানো হয়েছিল,
+   যা শুধু Claude-এর নিজস্ব পরিবেশে কাজ করে। সাধারণ ব্রাউজারে স্বাধীনভাবে
+   চালানোর জন্য নিচে ব্রাউজারের localStorage দিয়ে সেই একই API তৈরি করা হলো,
+   যাতে ডেটা সেভ/লোড, পিন সেটআপ, এডমিন লগইন সব ঠিকভাবে কাজ করে।
+---------------------------------------------------------- */
+if(!window.storage){
+  window.storage = (function(){
+    function fullKey(key, shared){ return 'messhishab-store:' + (shared ? 'shared' : 'local') + ':' + key; }
+    return {
+      get: function(key, shared){
+        return new Promise(function(resolve){
+          try {
+            var raw = localStorage.getItem(fullKey(key, shared));
+            if(raw === null || raw === undefined){ resolve(null); return; }
+            resolve({ key: key, value: raw, shared: !!shared });
+          } catch(e){ resolve(null); }
+        });
+      },
+      set: function(key, value, shared){
+        return new Promise(function(resolve){
+          try {
+            localStorage.setItem(fullKey(key, shared), value);
+            resolve({ key: key, value: value, shared: !!shared });
+          } catch(e){ resolve(null); }
+        });
+      },
+      "delete": function(key, shared){
+        return new Promise(function(resolve){
+          try {
+            localStorage.removeItem(fullKey(key, shared));
+            resolve({ key: key, deleted: true, shared: !!shared });
+          } catch(e){ resolve(null); }
+        });
+      },
+      list: function(prefix, shared){
+        return new Promise(function(resolve){
+          try {
+            var basePre = 'messhishab-store:' + (shared ? 'shared' : 'local') + ':';
+            var pre = basePre + (prefix || '');
+            var keys = [];
+            for(var i=0;i<localStorage.length;i++){
+              var k = localStorage.key(i);
+              if(k && k.indexOf(pre) === 0){ keys.push(k.slice(basePre.length)); }
+            }
+            resolve({ keys: keys, prefix: prefix, shared: !!shared });
+          } catch(e){ resolve(null); }
+        });
+      }
+    };
+  })();
+}
+(function(){
+
+/* ================= I18N ================= */
+var T = {
+  bn: {
+    app: { defaultName: 'মেস হিসাব খাতা', subtitle: 'সবার খাবার ও খরচের হিসাব, একসাথে' },
+    lock: { on: '🔓 অ্যাডমিন', view: '🔒 ভিউ মোড' },
+    manager: { label: 'এই মাসের ম্যানেজার', none: 'ম্যানেজার নির্ধারিত হয়নি' },
+    tabs: { dashboard:'খাতা সারাংশ', meals:'মিল এন্ট্রি', bazar:'বাজার', expenses:'অন্যান্য খরচ', deposits:'জমা', members:'সদস্য', settings:'সেটিংস' },
+    sync: { loading:'সিঙ্ক হচ্ছে...', justNow:'এইমাত্র আপডেট হয়েছে', agoSuffix:' সেকেন্ড আগে সিঙ্ক হয়েছে' },
+    dashboard: {
+      viewBanner:'👀 আপনি ভিউ মোডে আছেন। অ্যাডমিন আপডেট করলে এখানে সাথে সাথে দেখতে পাবেন।',
+      fundLabel:'তহবিলে অবশিষ্ট', fundSub:'মোট জমা − (বাজার + ভাড়া/বিল/অন্যান্য খরচ)',
+      statMeals:'মোট মিল', statRate:'প্রতি মিল রেট', statFood:'মোট বাজার খরচ', statOther:'ভাড়া/বিল/অন্যান্য',
+      statShare:'মাথাপিছু ভাগ', statDeposit:'মোট জমা', membersSection:'সদস্যদের হিসাব',
+      credit:'জমা আছে', due:'বাকি আছে', archivedBadge:'সাবেক সদস্য', mealsWord:'মিল', totalCostWord:'মোট খরচ',
+      breakdownFood:'খাবার', breakdownOther:'অন্যান্য'
+    },
+    meals: { title:'দৈনিক মিল এন্ট্রি', viewBanner:'👀 শুধু অ্যাডমিন মিল সংখ্যা পরিবর্তন করতে পারবেন।', date:'তারিখ', total:'মোট', totalMeals:'মোট মিল', archivedNote:'* সাবেক সদস্য — শুধু এই মাসের আগের হিসাব দেখানো হচ্ছে' },
+    bazar: { title:'বাজার খরচ', totalLabel:'মোট', buyerLabel:'কে বাজার করেছে', itemLabel:'কী কেনা হয়েছে', itemPlaceholder:'যেমনঃ চাল, তেল, সবজি', amountLabel:'টাকার পরিমাণ', addBtn:'+ বাজার যোগ করুন', empty:'এই মাসে এখনও কোনো বাজার যোগ করা হয়নি', unknown:'অজানা' },
+    expenses: { title:'বাসা ভাড়া, বিল ও অন্যান্য খরচ', infoBanner1:'ℹ️ এই খরচগুলো মিলের সংখ্যা দিয়ে নয়, সক্রিয় সদস্য সংখ্যা দিয়ে (মাথাপিছু) সমান ভাগে ভাগ হবে। এই মাসে মাথাপিছু ভাগ ', infoBanner2:' (' , infoBanner3: ' জন সদস্য)।', categoryLabel:'খরচের ধরন', noteLabel:'বিবরণ (ঐচ্ছিক)', notePlaceholder:'যেমনঃ জুলাই মাসের ভাড়া', amountLabel:'টাকার পরিমাণ', addBtn:'+ খরচ যোগ করুন', empty:'এই মাসে এখনও কোনো অন্যান্য খরচ যোগ করা হয়নি' },
+    categories: { rent:'বাসা ভাড়া', electricity:'বিদ্যুৎ বিল', water:'পানি/গ্যাস বিল', other:'অন্যান্য খরচ' },
+    deposits: { title:'জমা', totalLabel:'মোট', memberLabel:'সদস্য', dateLabel:'তারিখ', amountLabel:'জমার পরিমাণ', noteLabel:'নোট (ঐচ্ছিক)', notePlaceholder:'যেমনঃ ক্যাশে দেওয়া', addBtn:'+ জমা যোগ করুন', empty:'এই মাসে এখনও কোনো জমা নেই' },
+    members: { title:'সদস্য', newMemberLabel:'নতুন সদস্যের নাম', newMemberPlaceholder:'নাম লিখুন', addBtn:'+ সদস্য যোগ করুন', activeSection:'সক্রিয় সদস্য', personSuffix:' জন', empty:'এখনও কোনো সদস্য নেই', archivedSection:'সাবেক সদস্য', archivedEyebrow:'আগের হিসাব সংরক্ষিত আছে', reactivateBtn:'পুনরায় যোগ করুন', archiveNote:'সাবেক সদস্যদের আগের মাসের মিল, বাজার ও জমার হিসাব খাতায় ঠিক থাকবে। শুধু নতুন এন্ট্রির তালিকা থেকে তারা বাদ পড়েছেন।', archiveConfirm:'-কে সক্রিয় তালিকা থেকে বাদ দিতে চান? আগের সব হিসাব (মিল, বাজার, জমা) খাতায় ঠিক থাকবে, শুধু নতুন এন্ট্রির তালিকা থেকে বাদ পড়বেন।' },
+    settings: {
+      title:'সেটিংস', messNameLabel:'মেসের নাম', saveBtn:'সংরক্ষণ',
+      themeTitle:'থিম', themeLight:'☀️ লাইট', themeDark:'🌙 ডার্ক',
+      langTitle:'ভাষা', langBn:'বাংলা', langEn:'English',
+      adminTitle:'অ্যাডমিন ও ম্যানেজার', currentManager:'বর্তমান ম্যানেজার',
+      changeManagerBtn:'🔁 নতুন ম্যানেজার সেট করুন', historyTitle:'ম্যানেজার ইতিহাস', noHistory:'এখনও কোনো পরিবর্তন হয়নি',
+      loginBtn:'🔒 অ্যাডমিন হিসেবে প্রবেশ করুন', logoutBtn:'ভিউ মোডে ফিরে যান',
+      reportTitle:'মাসিক রিপোর্ট', reportDesc:'উপরে যে মাস নির্বাচন করা আছে, সেই মাসের রিপোর্ট তৈরি হবে।', printBtn:'🖨️ এই মাসের রিপোর্ট প্রিন্ট করুন',
+      backupTitle:'ডেটা ব্যাকআপ ও স্থানান্তর', backupDesc:'পুরো খাতা (সদস্য, মিল, বাজার, খরচ, জমা) একটি ফাইলে সংরক্ষণ করুন, অথবা আগের কোনো ব্যাকআপ ফিরিয়ে আনুন।',
+      downloadBtn:'⬇️ ডেটা ডাউনলোড করুন (JSON)', copyBtn:'📋 ডেটা কপি করুন', uploadFileLabel:'ব্যাকআপ ফাইল থেকে আপলোড করুন', or:'অথবা',
+      pasteLabel:'ব্যাকআপ JSON এখানে পেস্ট করুন', uploadBtn:'⬆️ পেস্ট করা ডেটা আপলোড করুন',
+      backupWarning:'⚠️ আপলোড করলে বর্তমান সব তথ্য মুছে গিয়ে ব্যাকআপের তথ্য বসে যাবে। প্রথমে বর্তমান ডেটা ডাউনলোড করে রাখা ভালো।'
+    },
+    onboard: {
+      title:'নতুন মেস খাতা শুরু করুন', sub:'মেসের নাম আর সদস্যদের নাম দিয়ে খাতাটা প্রস্তুত করুন। পরে যেকোনো সময় সদস্য যোগ বা বাদ দেওয়া যাবে।',
+      messNameLabel:'মেসের নাম', messNamePlaceholder:'যেমনঃ গ্রীন রোড বয়েজ মেস',
+      addMembersLabel:'সদস্যের নাম যোগ করুন', memberPlaceholder:'নাম লিখে Enter চাপুন', addBtn:'যোগ করুন', noMembersYet:'এখনও কোনো সদস্য যোগ করা হয়নি',
+      managerLabel:'কে এই মাসের ম্যানেজার হবেন', addMembersFirst:'আগে সদস্য যোগ করুন',
+      pinInfo:'যিনি এই খাতা শুরু করছেন তিনি প্রথম অ্যাডমিন হবেন। এই পিন দিয়ে ভবিষ্যতেও অ্যাডমিন প্রবেশ করতে পারবে, এবং প্রতি মাসে ম্যানেজার বদলালে নতুন পিন দেওয়া যাবে।',
+      pinLabel:'অ্যাডমিন পিন (৪ সংখ্যা বা বেশি)', pinPlaceholder:'যেমনঃ 1234', startBtn:'🚀 মেস শুরু করুন',
+      waitingTitle:'অ্যাডমিন খাতা প্রস্তুত করছেন', waitingSub:'মেসের অ্যাডমিন মেসের নাম ও সদস্যদের যোগ করলেই এই খাতা এখানে চালু হয়ে যাবে। আপনি যদি অ্যাডমিন হয়ে থাকেন, নিচের বাটন থেকে পিন দিয়ে প্রবেশ করুন।', waitingLoginBtn:'🔒 অ্যাডমিন হিসেবে প্রবেশ করুন',
+      needName:'মেসের নাম লিখুন', needMember:'অন্তত একজন সদস্য যোগ করুন', needManager:'ম্যানেজার নির্বাচন করুন', pinTooShort:'পিন অন্তত ৪ সংখ্যার হতে হবে', doneToastSuffix:' খাতা প্রস্তুত হয়েছে 🎉'
+    },
+    admin: {
+      onTitle:'অ্যাডমিন মোড চালু আছে', onDesc:'আপনি এখন সব তথ্য যোগ ও পরিবর্তন করতে পারবেন। সবাই লাইভ আপডেট দেখতে পাবে।',
+      changeBtn:'🔁 নতুন মেস ম্যানেজার সেট করুন', logoutBtn:'ভিউ মোডে ফিরে যান', closeBtn:'বন্ধ করুন',
+      firstSetupTitle:'প্রথমবার সেটআপ', firstSetupDesc:'এই খাতার জন্য একটি অ্যাডমিন পিন তৈরি করুন। এই পিন দিয়ে ভবিষ্যতে যে কেউ অ্যাডমিন হয়ে তথ্য আপডেট করতে পারবে।',
+      newPinLabel:'নতুন পিন (৪ সংখ্যা বা তার বেশি)', setPinBtn:'পিন সেট করুন ও অ্যাডমিন হন', cancelBtn:'বাতিল',
+      enterPinTitle:'অ্যাডমিন পিন দিন', enterPinDesc:'তথ্য যোগ বা পরিবর্তন করতে অ্যাডমিন পিন দিন। পিন না জানলে শুধু দেখতে পারবেন।',
+      pinLabel:'পিন', pinPlaceholder:'পিন লিখুন', enterBtn:'প্রবেশ করুন', wrongPin:'পিন সঠিক নয়',
+      changeTitle:'নতুন অ্যাডমিন / ম্যানেজার', changeDesc:'নতুন মাসের মেস ম্যানেজার বাছাই করুন এবং একটি নতুন পিন সেট করুন। সেট করার সাথে সাথে পুরনো পিন আর কাজ করবে না, এবং সব ডিভাইস ভিউ মোডে চলে যাবে যতক্ষণ না কেউ নতুন পিন দিয়ে প্রবেশ করে।',
+      chooseManagerLabel:'নতুন ম্যানেজার বাছাই করুন', newPinLabel2:'নতুন অ্যাডমিন পিন (৪ সংখ্যা বা তার বেশি)', setBtn:'নতুন পিন সেট করুন', backBtn:'ফিরে যান',
+      changedToast:'নতুন অ্যাডমিন পিন চালু হয়েছে', onToast:'অ্যাডমিন মোড চালু হয়েছে', offToast:'ভিউ মোডে ফেরত এসেছেন',
+      changedElsewhere:'অ্যাডমিন পরিবর্তন হয়েছে, আপনি এখন ভিউ মোডে আছেন', problemToast:'সমস্যা হয়েছে, আবার চেষ্টা করুন', needManagerToast:'একজন ম্যানেজার বাছাই করুন', noActiveMembers:'আগে অন্তত একজন সক্রিয় সদস্য যোগ করুন'
+    },
+    toast: {
+      saveFailed:'সংরক্ষণ ব্যর্থ হয়েছে, আবার চেষ্টা করুন', deleted:'মুছে ফেলা হয়েছে', bazarAdded:'বাজার যোগ হয়েছে', expenseAdded:'খরচ যোগ হয়েছে', depositAdded:'জমা যোগ হয়েছে',
+      amountInvalid:'সঠিক পরিমাণ লিখুন', nameRequired:'নাম লিখুন', memberAddedSuffix:' যোগ হয়েছে', memberArchivedSuffix:' বাদ দেওয়া হয়েছে, আগের হিসাব সংরক্ষিত আছে', memberReactivatedSuffix:' আবার সক্রিয় হয়েছে',
+      messNameRequired:'মেসের নাম খালি রাখা যাবে না', messNameUpdated:'মেসের নাম আপডেট হয়েছে',
+      downloadStarted:'ডাউনলোড শুরু হয়েছে', downloadFailed:'ডাউনলোড করা যায়নি, তাই "কপি করুন" ব্যবহার করুন',
+      copied:'ডেটা কপি হয়েছে, এখন যেকোনো জায়গায় সংরক্ষণ করুন', copyFailed:'কপি করা যায়নি, ডাউনলোড ব্যবহার করুন',
+      invalidJson:'এটি সঠিক JSON ফাইল নয়', invalidBackup:'এই ফাইলের গঠন মিলছে না, সঠিক ব্যাকআপ ফাইল দিন', fileReadFailed:'ফাইল পড়া যায়নি', pasteFirst:'আগে JSON পেস্ট করুন', restored:'ব্যাকআপ থেকে ডেটা বসানো হয়েছে'
+    },
+    importConfirm: { title:'নিশ্চিত করুন', membersWord:' জন সদস্য, ', bazarWord:' টি বাজার এন্ট্রি এবং ', depositsWord:' টি জমা এন্ট্রি আছে। এটি আপলোড করলে ', boldWarn:'বর্তমান সব তথ্য মুছে গিয়ে', afterBold:' এই ব্যাকআপ দিয়ে প্রতিস্থাপিত হবে। সবাই এই পরিবর্তন লাইভ দেখতে পাবে।', confirmBtn:'হ্যাঁ, প্রতিস্থাপন করুন', cancelBtn:'বাতিল', hasPrefix:'এই ব্যাকআপে ' },
+    print: { title:'মাসিক রিপোর্ট', generated:'তৈরি হয়েছে', manager:'ম্যানেজার', memberCol:'সদস্য', mealsCol:'মিল', mealCostCol:'খাবার খরচ', sharedCostCol:'ভাগের খরচ', totalCostCol:'মোট খরচ', depositCol:'জমা', balanceCol:'ব্যালেন্স', totalsRow:'সর্বমোট', bazarSectionTitle:'বাজার এন্ট্রি', expenseSectionTitle:'অন্যান্য খরচ', dateCol:'তারিখ', itemCol:'বিবরণ', amountCol:'পরিমাণ', noEntries:'কোনো এন্ট্রি নেই' }
+  },
+  en: {
+    app: { defaultName: 'Mess Accounts Ledger', subtitle: 'Shared meal and expense accounts, together' },
+    lock: { on: '🔓 Admin', view: '🔒 View mode' },
+    manager: { label: 'Manager this month', none: 'No manager set yet' },
+    tabs: { dashboard:'Summary', meals:'Meals', bazar:'Groceries', expenses:'Other bills', deposits:'Deposits', members:'Members', settings:'Settings' },
+    sync: { loading:'Syncing...', justNow:'Updated just now', agoSuffix:' seconds ago' },
+    dashboard: {
+      viewBanner:'👀 You are in view mode. Admin updates will appear here live.',
+      fundLabel:'Remaining in fund', fundSub:'Total deposits minus (groceries + rent/bills/other)',
+      statMeals:'Total meals', statRate:'Rate per meal', statFood:'Total grocery cost', statOther:'Rent/bills/other',
+      statShare:'Per-head share', statDeposit:'Total deposits', membersSection:'Member accounts',
+      credit:'In credit', due:'Owes', archivedBadge:'Former member', mealsWord:'meals', totalCostWord:'Total cost',
+      breakdownFood:'Food', breakdownOther:'Other'
+    },
+    meals: { title:'Daily meal entry', viewBanner:'👀 Only the admin can change meal counts.', date:'Date', total:'Total', totalMeals:'Total meals', archivedNote:'* Former member — showing only this months earlier record' },
+    bazar: { title:'Grocery expenses', totalLabel:'Total', buyerLabel:'Bought by', itemLabel:'What was bought', itemPlaceholder:'e.g. rice, oil, vegetables', amountLabel:'Amount', addBtn:'+ Add grocery entry', empty:'No grocery entries yet this month', unknown:'Unknown' },
+    expenses: { title:'Rent, bills and other expenses', infoBanner1:'ℹ️ These costs split equally per active member (per head), not by meal count. This months per-head share is ', infoBanner2:' (', infoBanner3: ' members).', categoryLabel:'Expense type', noteLabel:'Note (optional)', notePlaceholder:'e.g. July rent', amountLabel:'Amount', addBtn:'+ Add expense', empty:'No other expenses added yet this month' },
+    categories: { rent:'Rent', electricity:'Electricity bill', water:'Water/gas bill', other:'Other expense' },
+    deposits: { title:'Deposits', totalLabel:'Total', memberLabel:'Member', dateLabel:'Date', amountLabel:'Deposit amount', noteLabel:'Note (optional)', notePlaceholder:'e.g. paid in cash', addBtn:'+ Add deposit', empty:'No deposits yet this month' },
+    members: { title:'Members', newMemberLabel:'New member name', newMemberPlaceholder:'Enter a name', addBtn:'+ Add member', activeSection:'Active members', personSuffix:'', empty:'No members yet', archivedSection:'Former members', archivedEyebrow:'Old records are preserved', reactivateBtn:'Reactivate', archiveNote:'A former members earlier meal, grocery and deposit records stay in the ledger. They are just left out of new entry lists.', archiveConfirm:': remove from the active list? All earlier records (meals, groceries, deposits) stay in the ledger, they will just be left out of new entries.' },
+    settings: {
+      title:'Settings', messNameLabel:'Mess name', saveBtn:'Save',
+      themeTitle:'Theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
+      langTitle:'Language', langBn:'বাংলা', langEn:'English',
+      adminTitle:'Admin & manager', currentManager:'Current manager',
+      changeManagerBtn:'🔁 Set new manager', historyTitle:'Manager history', noHistory:'No changes yet',
+      loginBtn:'🔒 Log in as admin', logoutBtn:'Back to view mode',
+      reportTitle:'Monthly report', reportDesc:'The report is generated for the month selected above.', printBtn:'🖨️ Print this months report',
+      backupTitle:'Data backup & transfer', backupDesc:'Save the whole ledger (members, meals, groceries, expenses, deposits) to a file, or restore an earlier backup.',
+      downloadBtn:'⬇️ Download data (JSON)', copyBtn:'📋 Copy data', uploadFileLabel:'Upload from a backup file', or:'or',
+      pasteLabel:'Paste backup JSON here', uploadBtn:'⬆️ Upload pasted data',
+      backupWarning:'⚠️ Uploading will replace all current data with the backup. It is best to download the current data first.'
+    },
+    onboard: {
+      title:'Start a new mess ledger', sub:'Set up the ledger with the mess name and member names. Members can be added or removed any time later.',
+      messNameLabel:'Mess name', messNamePlaceholder:'e.g. Green Road Boys Mess',
+      addMembersLabel:'Add member names', memberPlaceholder:'Type a name and press Enter', addBtn:'Add', noMembersYet:'No members added yet',
+      managerLabel:'Who will be this months manager', addMembersFirst:'Add members first',
+      pinInfo:'Whoever starts this ledger becomes the first admin. This PIN lets an admin log in later too, and a new PIN can be set whenever the manager changes each month.',
+      pinLabel:'Admin PIN (4+ digits)', pinPlaceholder:'e.g. 1234', startBtn:'🚀 Start the mess',
+      waitingTitle:'The admin is setting up the ledger', waitingSub:'Once the admin adds the mess name and members, this ledger will appear here. If you are the admin, log in with the PIN below.', waitingLoginBtn:'🔒 Log in as admin',
+      needName:'Enter the mess name', needMember:'Add at least one member', needManager:'Choose a manager', pinTooShort:'PIN must be at least 4 digits', doneToastSuffix:' ledger is ready 🎉'
+    },
+    admin: {
+      onTitle:'Admin mode is on', onDesc:'You can now add and change all information. Everyone will see live updates.',
+      changeBtn:'🔁 Set new mess manager', logoutBtn:'Back to view mode', closeBtn:'Close',
+      firstSetupTitle:'First-time setup', firstSetupDesc:'Create an admin PIN for this ledger. Anyone with this PIN can become admin and update information later.',
+      newPinLabel:'New PIN (4+ digits)', setPinBtn:'Set PIN and become admin', cancelBtn:'Cancel',
+      enterPinTitle:'Enter admin PIN', enterPinDesc:'Enter the admin PIN to add or change information. Without it you can only view.',
+      pinLabel:'PIN', pinPlaceholder:'Enter PIN', enterBtn:'Log in', wrongPin:'Incorrect PIN',
+      changeTitle:'New admin / manager', changeDesc:'Choose the new months mess manager and set a new PIN. As soon as it is set, the old PIN stops working, and every device drops to view mode until someone logs in with the new PIN.',
+      chooseManagerLabel:'Choose the new manager', newPinLabel2:'New admin PIN (4+ digits)', setBtn:'Set new PIN', backBtn:'Back',
+      changedToast:'New admin PIN is active', onToast:'Admin mode is on', offToast:'Back to view mode',
+      changedElsewhere:'The admin changed, you are now in view mode', problemToast:'Something went wrong, try again', needManagerToast:'Choose a manager', noActiveMembers:'Add at least one active member first'
+    },
+    toast: {
+      saveFailed:'Save failed, try again', deleted:'Deleted', bazarAdded:'Grocery entry added', expenseAdded:'Expense added', depositAdded:'Deposit added',
+      amountInvalid:'Enter a valid amount', nameRequired:'Enter a name', memberAddedSuffix:' added', memberArchivedSuffix:' removed, earlier records are preserved', memberReactivatedSuffix:' is active again',
+      messNameRequired:'Mess name cannot be empty', messNameUpdated:'Mess name updated',
+      downloadStarted:'Download started', downloadFailed:'Could not download, please use Copy instead',
+      copied:'Data copied, save it anywhere now', copyFailed:'Could not copy, please use download',
+      invalidJson:'This is not a valid JSON file', invalidBackup:'This file structure does not match, please give a valid backup file', fileReadFailed:'Could not read the file', pasteFirst:'Paste the JSON first', restored:'Data restored from backup'
+    },
+    importConfirm: { title:'Confirm', membersWord:' members, ', bazarWord:' grocery entries, and ', depositsWord:' deposit entries. Uploading will ', boldWarn:'erase all current data', afterBold:' and replace it with this backup. Everyone will see this change live.', confirmBtn:'Yes, replace it', cancelBtn:'Cancel', hasPrefix:'This backup has ' },
+    print: { title:'Monthly report', generated:'Generated', manager:'Manager', memberCol:'Member', mealsCol:'Meals', mealCostCol:'Meal cost', sharedCostCol:'Shared cost', totalCostCol:'Total cost', depositCol:'Deposit', balanceCol:'Balance', totalsRow:'Total', bazarSectionTitle:'Grocery entries', expenseSectionTitle:'Other expenses', dateCol:'Date', itemCol:'Details', amountCol:'Amount', noEntries:'No entries' }
+  }
+};
+function t(path){
+  var parts = path.split('.');
+  var obj = T[S.lang] || T.bn, i;
+  for(i=0;i<parts.length;i++){ obj = obj && obj[parts[i]]; }
+  if(obj === undefined || obj === null){
+    obj = T.bn;
+    for(i=0;i<parts.length;i++){ obj = obj && obj[parts[i]]; }
+  }
+  return (obj === undefined || obj === null) ? path : obj;
+}
+
+var MEMBER_COLORS = ['#2F6F4E','#B5482F','#2B3A55','#8A5A2B','#5C6B2F','#7A4B6B','#2B7A78','#A0522D'];
+var BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+var EN_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var BN_WEEKDAYS = ['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
+var EN_WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var EXPENSE_CATEGORIES = { rent:{icon:'🏠'}, electricity:{icon:'💡'}, water:{icon:'🚿'}, other:{icon:'🧾'} };
+
+var DATA_KEY = 'messhishab:data';
+var PIN_KEY = 'messhishab:pin';
+var LOCAL_ADMIN_KEY = 'messhishab:local-admin';
+var LANG_KEY = 'messhishab:lang';
+var THEME_KEY = 'messhishab:theme';
+
+var S = {
+  data: null,
+  isAdmin: false,
+  pinExists: false,
+  tab: 'dashboard',
+  ym: null,
+  lang: 'bn',
+  theme: 'light',
+  loaded: false,
+  lastSync: null,
+  toastTimer: null,
+  onboardMembers: [],
+  onboardName: '',
+  _pendingImport: null
+};
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+function todayStr(){ var d = new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function currentYm(){ var d = new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1); }
+function ymLabel(ym){ var p = ym.split('-'); var months = S.lang==='en' ? EN_MONTHS : BN_MONTHS; return months[parseInt(p[1],10)-1] + ' ' + p[0]; }
+function daysInMonth(ym){ var p = ym.split('-'); var y = parseInt(p[0],10), m = parseInt(p[1],10); return new Date(y, m, 0).getDate(); }
+function fmtNum(n){ if(n===null||n===undefined||isNaN(n)) n=0; return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtInt(n){ if(n===null||n===undefined||isNaN(n)) n=0; var r = Math.round(n*100)/100; return (r % 1 === 0) ? String(r) : r.toFixed(2); }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+function defaultData(){
+  return { messName: '', managerId: '', managerHistory: [], members: [], meals: {}, bazar: [], expenses: [], deposits: [] };
+}
+
+function findMemberById(id){
+  if(!id) return null;
+  var f = S.data.members.filter(function(m){ return m.id === id; });
+  return f[0] || null;
+}
+function activeMembers(){ return S.data.members.filter(function(m){ return m.active !== false; }); }
+function archivedMembers(){ return S.data.members.filter(function(m){ return m.active === false; }); }
+
+/* members relevant to a given month: everyone currently active,
+   plus anyone archived who still has meal/deposit records that month
+   (so past data always stays visible even after someone leaves) */
+function membersForMonth(ym){
+  var byId = {};
+  activeMembers().forEach(function(m){ byId[m.id] = m; });
+  Object.keys(S.data.meals).forEach(function(date){
+    if(date.indexOf(ym) !== 0) return;
+    Object.keys(S.data.meals[date]).forEach(function(mid){
+      if(byId[mid]) return;
+      var mem = findMemberById(mid);
+      if(mem) byId[mid] = mem;
+    });
+  });
+  S.data.deposits.forEach(function(d){
+    if(d.date.indexOf(ym) !== 0) return;
+    if(byId[d.memberId]) return;
+    var mem = findMemberById(d.memberId);
+    if(mem) byId[d.memberId] = mem;
+  });
+  var order = {};
+  S.data.members.forEach(function(m,i){ order[m.id] = i; });
+  return Object.keys(byId).map(function(id){ return byId[id]; })
+    .sort(function(a,b){ return order[a.id] - order[b.id]; });
+}
+
+function isSetupComplete(){
+  return !!(S.data && S.data.messName && S.data.messName.trim() && S.data.members && S.data.members.length > 0);
+}
+
+/* ---------------- STORAGE ---------------- */
+function normalizeData(){
+  if(!S.data) S.data = defaultData();
+  if(typeof S.data.messName !== 'string') S.data.messName = '';
+  if(typeof S.data.managerId !== 'string') S.data.managerId = '';
+  if(!Array.isArray(S.data.managerHistory)) S.data.managerHistory = [];
+  if(!Array.isArray(S.data.members)) S.data.members = [];
+  if(!S.data.meals || typeof S.data.meals !== 'object') S.data.meals = {};
+  if(!Array.isArray(S.data.bazar)) S.data.bazar = [];
+  if(!Array.isArray(S.data.expenses)) S.data.expenses = [];
+  if(!Array.isArray(S.data.deposits)) S.data.deposits = [];
+}
+
+async function loadAll(){
+  try {
+    var res = await window.storage.get(DATA_KEY, true);
+    S.data = res && res.value ? JSON.parse(res.value) : defaultData();
+  } catch(e){
+    S.data = defaultData();
+    try { await window.storage.set(DATA_KEY, JSON.stringify(S.data), true); } catch(e2){}
+  }
+  normalizeData();
+  var sharedPin = null;
+  try {
+    var pinRes = await window.storage.get(PIN_KEY, true);
+    sharedPin = pinRes && pinRes.value ? pinRes.value : null;
+    S.pinExists = !!sharedPin;
+  } catch(e){ S.pinExists = false; }
+  try {
+    var localRes = await window.storage.get(LOCAL_ADMIN_KEY, false);
+    var localPin = localRes && localRes.value ? localRes.value : null;
+    S.isAdmin = !!(localPin && sharedPin && localPin === sharedPin);
+  } catch(e){ S.isAdmin = false; }
+  try {
+    var langRes = await window.storage.get(LANG_KEY, false);
+    if(langRes && (langRes.value === 'bn' || langRes.value === 'en')) S.lang = langRes.value;
+  } catch(e){}
+  try {
+    var themeRes = await window.storage.get(THEME_KEY, false);
+    if(themeRes && (themeRes.value === 'light' || themeRes.value === 'dark')) S.theme = themeRes.value;
+  } catch(e){}
+  S.loaded = true;
+  S.lastSync = new Date();
+}
+
+/* re-checks that this device's saved pin still matches the live admin pin
+   (handles monthly manager handover: old device auto-drops to view mode) */
+async function revalidateAdmin(){
+  try {
+    var pinRes = await window.storage.get(PIN_KEY, true);
+    var sharedPin = pinRes && pinRes.value ? pinRes.value : null;
+    var localRes = await window.storage.get(LOCAL_ADMIN_KEY, false);
+    var localPin = localRes && localRes.value ? localRes.value : null;
+    S.pinExists = !!sharedPin;
+    var stillAdmin = !!(localPin && sharedPin && localPin === sharedPin);
+    if(S.isAdmin && !stillAdmin){
+      S.isAdmin = false;
+      showToast(t('admin.changedElsewhere'));
+      render();
+    } else if(!S.isAdmin && stillAdmin){
+      S.isAdmin = true;
+      render();
+    }
+  } catch(e){}
+}
+
+async function saveData(){
+  try {
+    await window.storage.set(DATA_KEY, JSON.stringify(S.data), true);
+    S.lastSync = new Date();
+    return true;
+  } catch(e){
+    showToast(t('toast.saveFailed'));
+    return false;
+  }
+}
+
+async function pollForUpdates(){
+  if(!S.loaded) return;
+  var active = document.activeElement;
+  if(active && active.tagName === 'INPUT' && active.classList.contains('mh-live-guard')) return;
+  try {
+    var res = await window.storage.get(DATA_KEY, true);
+    var fresh = res && res.value ? res.value : null;
+    if(fresh && fresh !== JSON.stringify(S.data)){
+      S.data = JSON.parse(fresh);
+      normalizeData();
+      S.lastSync = new Date();
+      render();
+    } else {
+      updateSyncLabel();
+    }
+  } catch(e){}
+  if(!document.getElementById('mh-overlay')) revalidateAdmin();
+}
+
+/* ---------------- TOAST ---------------- */
+function showToast(msg){
+  var old = document.getElementById('mh-toast');
+  if(old) old.remove();
+  var el = document.createElement('div');
+  el.id = 'mh-toast';
+  el.className = 'mh-toast';
+  el.textContent = msg;
+  document.getElementById('mh-root').appendChild(el);
+  clearTimeout(S.toastTimer);
+  S.toastTimer = setTimeout(function(){ el.remove(); }, 2600);
+}
+
+/* ---------------- CALC ---------------- */
+function calcMonth(ym){
+  var members = membersForMonth(ym);
+  var perMember = {};
+  members.forEach(function(m){ perMember[m.id] = { meals: 0, deposit: 0 }; });
+
+  Object.keys(S.data.meals).forEach(function(date){
+    if(date.indexOf(ym) !== 0) return;
+    var row = S.data.meals[date];
+    Object.keys(row).forEach(function(mid){
+      if(!perMember[mid]) return;
+      perMember[mid].meals += (parseFloat(row[mid]) || 0);
+    });
+  });
+
+  var totalCost = 0;
+  S.data.bazar.forEach(function(b){ if(b.date.indexOf(ym) === 0) totalCost += (parseFloat(b.amount) || 0); });
+
+  S.data.deposits.forEach(function(d){
+    if(d.date.indexOf(ym) !== 0) return;
+    if(!perMember[d.memberId]) return;
+    perMember[d.memberId].deposit += (parseFloat(d.amount) || 0);
+  });
+
+  var totalMeals = 0;
+  members.forEach(function(m){ totalMeals += perMember[m.id].meals; });
+  var rate = totalMeals > 0 ? totalCost / totalMeals : 0;
+
+  var totalOther = 0;
+  S.data.expenses.forEach(function(x){ if(x.date.indexOf(ym) === 0) totalOther += (parseFloat(x.amount) || 0); });
+  var activeIds = {};
+  activeMembers().forEach(function(m){ activeIds[m.id] = true; });
+  var activeCount = activeMembers().length;
+  var otherShare = activeCount > 0 ? totalOther / activeCount : 0;
+
+  members.forEach(function(m){
+    var pm = perMember[m.id];
+    pm.mealCost = pm.meals * rate;
+    pm.otherShare = activeIds[m.id] ? otherShare : 0;
+    pm.cost = pm.mealCost + pm.otherShare;
+    pm.balance = pm.deposit - pm.cost;
+  });
+
+  var totalDeposit = 0;
+  members.forEach(function(m){ totalDeposit += perMember[m.id].deposit; });
+
+  var totalRemaining = totalDeposit - (totalCost + totalOther);
+
+  return {
+    members: members, perMember: perMember, totalMeals: totalMeals, totalCost: totalCost, rate: rate,
+    totalOther: totalOther, otherShare: otherShare, activeCount: activeCount,
+    totalDeposit: totalDeposit, totalRemaining: totalRemaining
+  };
+}
+
+/* ---------------- RENDER ROOT ---------------- */
+function render(){
+  var root = document.getElementById('mh-root');
+  if(root) root.classList.toggle('mh-dark', S.theme === 'dark');
+  var shell = document.getElementById('mh-shell');
+  if(!S.loaded){ return; }
+  if(!isSetupComplete()){
+    shell.innerHTML = renderOnboarding();
+    return;
+  }
+  var html = '';
+  html += renderHeader();
+  html += renderTabs();
+  html += renderTabContent();
+  shell.innerHTML = html;
+  updateSyncLabel();
+  attachGlobalHandlers();
+}
+
+function updateSyncLabel(){
+  var el = document.getElementById('mh-sync-label');
+  if(!el || !S.lastSync) return;
+  var secs = Math.max(0, Math.round((new Date() - S.lastSync)/1000));
+  el.textContent = secs < 3 ? t('sync.justNow') : (secs + t('sync.agoSuffix'));
+}
+
+function renderHeader(){
+  if(!S.ym) S.ym = currentYm();
+  var html = '';
+  html += '<div class="mh-header">';
+  html += '  <div class="mh-title-row">';
+  html += '    <div><div class="mh-title">' + escapeHtml(S.data.messName || t('app.defaultName')) + '</div><div class="mh-subtitle">' + t('app.subtitle') + '</div></div>';
+  if(S.isAdmin){
+    html += '    <button class="mh-lock-btn on" onclick="MH.openAdminModal()">' + t('lock.on') + '</button>';
+  } else {
+    html += '    <button class="mh-lock-btn" onclick="MH.openAdminModal()">' + t('lock.view') + '</button>';
+  }
+  html += '  </div>';
+  var mgr = findMemberById(S.data.managerId);
+  html += '  <div class="mh-manager-badge">👤 ' + t('manager.label') + ': <b>' + (mgr ? escapeHtml(mgr.name) : t('manager.none')) + '</b></div>';
+  html += '  <div class="mh-month-row">';
+  html += '    <button class="mh-month-btn" onclick="MH.shiftMonth(-1)">‹</button>';
+  html += '    <div class="mh-month-label">' + ymLabel(S.ym) + '</div>';
+  html += '    <button class="mh-month-btn" onclick="MH.shiftMonth(1)">›</button>';
+  html += '  </div>';
+  html += '  <div class="mh-sync-row"><span class="mh-sync-dot"></span><span id="mh-sync-label">' + t('sync.loading') + '</span></div>';
+  html += '</div>';
+  return html;
+}
+
+function renderTabs(){
+  var tabs = [
+    ['dashboard', t('tabs.dashboard')],
+    ['meals', t('tabs.meals')],
+    ['bazar', t('tabs.bazar')],
+    ['expenses', t('tabs.expenses')],
+    ['deposits', t('tabs.deposits')],
+    ['members', t('tabs.members')],
+    ['settings', '⚙️ ' + t('tabs.settings')]
+  ];
+  var html = '<div class="mh-tabs">';
+  tabs.forEach(function(tb){
+    html += '<button class="mh-tab ' + (S.tab===tb[0]?'active':'') + '" onclick="MH.setTab(\'' + tb[0] + '\')">' + tb[1] + '</button>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderTabContent(){
+  if(S.tab === 'dashboard') return renderDashboard();
+  if(S.tab === 'meals') return renderMeals();
+  if(S.tab === 'bazar') return renderBazar();
+  if(S.tab === 'expenses') return renderExpenses();
+  if(S.tab === 'deposits') return renderDeposits();
+  if(S.tab === 'members') return renderMembers();
+  if(S.tab === 'settings') return renderSettings();
+  return '';
+}
+
+/* ---------------- ONBOARDING ---------------- */
+function renderOnboarding(){
+  if(S.pinExists && !S.isAdmin){
+    return renderOnboardingWaiting();
+  }
+  var needsPin = !S.pinExists;
+  var html = '';
+  html += '<div class="mh-onboard-hero">';
+  html += '  <div class="mh-onboard-icon">📒</div>';
+  html += '  <div class="mh-onboard-title">' + t('onboard.title') + '</div>';
+  html += '  <div class="mh-onboard-sub">' + t('onboard.sub') + '</div>';
+  html += '</div>';
+
+  html += '<div class="mh-card">';
+  html += '  <div class="mh-field"><label>' + t('onboard.messNameLabel') + '</label><input id="mh-ob-name" type="text" placeholder="' + t('onboard.messNamePlaceholder') + '" value="' + escapeHtml(S.onboardName) + '" oninput="MH.syncOnboardName(this)"></div>';
+  html += '</div>';
+
+  html += '<div class="mh-card">';
+  html += '  <div class="mh-field"><label>' + t('onboard.addMembersLabel') + '</label>';
+  html += '    <div style="display:flex;gap:8px;">';
+  html += '      <input id="mh-ob-member-input" type="text" placeholder="' + t('onboard.memberPlaceholder') + '" style="flex:1;" onkeydown="if(event.key===\'Enter\'){event.preventDefault();MH.addOnboardMember();}">';
+  html += '      <button class="mh-btn mh-btn-primary" onclick="MH.addOnboardMember()">' + t('onboard.addBtn') + '</button>';
+  html += '    </div>';
+  html += '  </div>';
+  html += '  <div id="mh-ob-chip-list" class="mh-chip-list">' + renderOnboardChips() + '</div>';
+  html += '  <div class="mh-field" style="margin-top:12px;"><label>' + t('onboard.managerLabel') + '</label><div id="mh-ob-manager-wrap">' + renderOnboardManagerSelect() + '</div></div>';
+  html += '</div>';
+
+  if(needsPin){
+    html += '<div class="mh-card">';
+    html += '  <p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">' + t('onboard.pinInfo') + '</p>';
+    html += '  <div class="mh-field"><label>' + t('onboard.pinLabel') + '</label><input id="mh-ob-pin" type="password" inputmode="numeric" placeholder="' + t('onboard.pinPlaceholder') + '"></div>';
+    html += '</div>';
+  }
+
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.finishOnboarding()" style="padding:13px;font-size:14.5px;">' + t('onboard.startBtn') + '</button>';
+  return html;
+}
+
+function renderOnboardChips(){
+  if(S.onboardMembers.length === 0){
+    return '<div class="mh-empty" style="padding:16px 6px;">' + t('onboard.noMembersYet') + '</div>';
+  }
+  var html = '';
+  S.onboardMembers.forEach(function(name, i){
+    html += '<span class="mh-chip-item">' + escapeHtml(name) + '<button onclick="MH.removeOnboardMember(' + i + ')">×</button></span>';
+  });
+  return html;
+}
+
+function renderOnboardManagerSelect(){
+  if(S.onboardMembers.length === 0){
+    return '<div class="mh-empty" style="padding:10px;">' + t('onboard.addMembersFirst') + '</div>';
+  }
+  var html = '<select id="mh-ob-manager-select">';
+  S.onboardMembers.forEach(function(name, i){
+    html += '<option value="' + i + '">' + escapeHtml(name) + '</option>';
+  });
+  html += '</select>';
+  return html;
+}
+
+function refreshOnboardMemberUI(){
+  var chipEl = document.getElementById('mh-ob-chip-list');
+  if(chipEl) chipEl.innerHTML = renderOnboardChips();
+  var mgrEl = document.getElementById('mh-ob-manager-wrap');
+  if(mgrEl) mgrEl.innerHTML = renderOnboardManagerSelect();
+}
+
+function renderOnboardingWaiting(){
+  var html = '';
+  html += '<div class="mh-onboard-hero">';
+  html += '  <div class="mh-onboard-icon">⏳</div>';
+  html += '  <div class="mh-onboard-title">' + t('onboard.waitingTitle') + '</div>';
+  html += '  <div class="mh-onboard-sub">' + t('onboard.waitingSub') + '</div>';
+  html += '  <button class="mh-btn mh-btn-primary" style="margin-top:14px;" onclick="MH.openAdminModal()">' + t('onboard.waitingLoginBtn') + '</button>';
+  html += '</div>';
+  return html;
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  var c = calcMonth(S.ym);
+  var html = '';
+  if(!S.isAdmin){
+    html += '<div class="mh-note-banner">' + t('dashboard.viewBanner') + '</div>';
+  }
+
+  var fundPositive = c.totalRemaining >= 0;
+  var fundColor = fundPositive ? 'var(--green)' : 'var(--rust)';
+  var fundBg = fundPositive ? 'var(--green-soft)' : 'var(--rust-soft)';
+  html += '<div class="mh-fund-card" style="background:' + fundBg + ';border-color:' + fundColor + ';">';
+  html += '  <div class="mh-fund-label">' + t('dashboard.fundLabel') + ' (' + ymLabel(S.ym) + ')</div>';
+  html += '  <div class="mh-fund-amount" style="color:' + fundColor + ';">' + (fundPositive?'':'-') + '৳' + fmtNum(Math.abs(c.totalRemaining)) + '</div>';
+  html += '  <div class="mh-fund-sub">' + t('dashboard.fundSub') + '</div>';
+  html += '</div>';
+
+  html += '<div class="mh-stat-strip">';
+  html += statBox(fmtInt(c.totalMeals), t('dashboard.statMeals'));
+  html += statBox('৳'+fmtInt(c.rate), t('dashboard.statRate'));
+  html += statBox('৳'+fmtNum(c.totalCost), t('dashboard.statFood'));
+  html += statBox('৳'+fmtNum(c.totalOther), t('dashboard.statOther'));
+  html += statBox('৳'+fmtInt(c.otherShare), t('dashboard.statShare'));
+  html += statBox('৳'+fmtNum(c.totalDeposit), t('dashboard.statDeposit'));
+  html += '</div>';
+
+  html += '<div class="mh-section-title"><span>' + t('dashboard.membersSection') + '</span><span class="mh-eyebrow">' + ymLabel(S.ym) + '</span></div>';
+  html += '<div class="mh-rack"><div class="mh-rail"></div><div class="mh-tag-grid">';
+  c.members.forEach(function(m){
+    var pm = c.perMember[m.id];
+    var positive = pm.balance >= 0;
+    var color = positive ? 'var(--green)' : 'var(--rust)';
+    var isArchived = (m.active === false);
+    var initial = m.name ? m.name.trim().charAt(0).toUpperCase() : '?';
+    html += '<div class="mh-tag">';
+    html += '<div class="mh-tag-avatar-row">';
+    html += '<div class="mh-tag-avatar" style="background:' + m.color + '">' + initial + '</div>';
+    html += '<div class="mh-tag-name">' + escapeHtml(m.name) + (isArchived ? '<span class="mh-tag-archived-badge">' + t('dashboard.archivedBadge') + '</span>' : '') + '</div>';
+    html += '</div>';
+    html += '<div class="mh-tag-balance" style="color:' + color + '"><span class="mh-arrow">' + (positive ? '▲' : '▼') + '</span>' + (positive?'':'-') + '৳' + fmtNum(Math.abs(pm.balance)) + '</div>';
+    html += '<div class="mh-tag-status" style="color:' + color + '">' + (positive ? t('dashboard.credit') : t('dashboard.due')) + '</div>';
+    html += '<div class="mh-tag-meta"><span>🍽️ ' + t('dashboard.mealsWord') + ' ' + fmtInt(pm.meals) + '</span><span>৳ ' + t('dashboard.totalCostWord') + ' ' + fmtInt(pm.cost) + '</span></div>';
+    if(pm.otherShare > 0){
+      html += '<div style="font-size:9.5px;color:var(--ink-soft);margin-top:3px;">' + t('dashboard.breakdownFood') + ' ৳' + fmtInt(pm.mealCost) + ' + ' + t('dashboard.breakdownOther') + ' ৳' + fmtInt(pm.otherShare) + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function statBox(num, label){
+  return '<div class="mh-stat"><div class="mh-stat-num">' + num + '</div><div class="mh-stat-label">' + label + '</div></div>';
+}
+
+/* ---------------- MEALS ---------------- */
+function renderMeals(){
+  var members = membersForMonth(S.ym);
+  var days = daysInMonth(S.ym);
+  var today = todayStr();
+  var weekdays = S.lang === 'en' ? EN_WEEKDAYS : BN_WEEKDAYS;
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('meals.title') + '</span><span class="mh-eyebrow">' + ymLabel(S.ym) + '</span></div>';
+  if(!S.isAdmin){
+    html += '<div class="mh-note-banner">' + t('meals.viewBanner') + '</div>';
+  }
+  html += '<div class="mh-table-wrap"><table class="mh-table"><thead><tr><th style="text-align:left;">' + t('meals.date') + '</th>';
+  members.forEach(function(m){ html += '<th>' + escapeHtml(m.name) + (m.active === false ? ' *' : '') + '</th>'; });
+  html += '<th>' + t('meals.total') + '</th></tr></thead><tbody>';
+
+  var colTotals = {};
+  members.forEach(function(m){ colTotals[m.id] = 0; });
+  var grandTotal = 0;
+
+  for(var d=1; d<=days; d++){
+    var date = S.ym + '-' + pad2(d);
+    var dow = new Date(S.ym.split('-')[0], parseInt(S.ym.split('-')[1],10)-1, d).getDay();
+    var row = S.data.meals[date] || {};
+    var rowTotal = 0;
+    html += '<tr class="' + (date===today?'mh-today':'') + '">';
+    html += '<td class="mh-date-cell">' + d + ' ' + weekdays[dow] + '</td>';
+    members.forEach(function(m){
+      var val = row[m.id] !== undefined ? row[m.id] : '';
+      rowTotal += (parseFloat(val) || 0);
+      colTotals[m.id] += (parseFloat(val) || 0);
+      if(S.isAdmin && m.active !== false){
+        html += '<td><input class="mh-meal-input" type="number" min="0" step="0.5" value="' + (val===''?'':val) + '" placeholder="0" data-date="' + date + '" data-member="' + m.id + '" onchange="MH.updateMeal(this)"></td>';
+      } else {
+        html += '<td>' + (val === '' ? '&mdash;' : fmtInt(val)) + '</td>';
+      }
+    });
+    grandTotal += rowTotal;
+    html += '<td class="mh-mono" style="font-family:JetBrains Mono,monospace;">' + fmtInt(rowTotal) + '</td>';
+    html += '</tr>';
+  }
+
+  if(members.some(function(m){ return m.active === false; })){
+    html += '</tbody><tfoot><tr><td colspan="' + (members.length+2) + '" style="text-align:left;font-weight:400;font-size:11px;color:var(--ink-soft);background:var(--paper);">' + t('meals.archivedNote') + '</td></tr>';
+  } else {
+    html += '</tbody><tfoot>';
+  }
+  html += '<tr><td style="text-align:left;">' + t('meals.totalMeals') + '</td>';
+  members.forEach(function(m){ html += '<td>' + fmtInt(colTotals[m.id]) + '</td>'; });
+  html += '<td>' + fmtInt(grandTotal) + '</td></tr></tfoot>';
+  html += '</table></div>';
+  return html;
+}
+
+/* ---------------- BAZAR ---------------- */
+function renderBazar(){
+  var members = S.data.members;
+  var entries = S.data.bazar.filter(function(b){ return b.date.indexOf(S.ym) === 0; })
+    .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var total = entries.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('bazar.title') + '</span><span class="mh-eyebrow">' + t('bazar.totalLabel') + ' ৳' + fmtNum(total) + '</span></div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-form-grid">';
+    html += fieldInput('mh-bazar-date', t('meals.date'), 'date', todayStr());
+    html += fieldSelect('mh-bazar-member', t('bazar.buyerLabel'), activeMembers());
+    html += '</div>';
+    html += '<div class="mh-field"><label>' + t('bazar.itemLabel') + '</label><input id="mh-bazar-item" type="text" placeholder="' + t('bazar.itemPlaceholder') + '"></div>';
+    html += '<div class="mh-field"><label>' + t('bazar.amountLabel') + '</label><input id="mh-bazar-amount" type="number" min="0" step="0.01" placeholder="৳ 0.00"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addBazar()">' + t('bazar.addBtn') + '</button>';
+    html += '</div>';
+  }
+
+  html += '<div class="mh-card">';
+  if(entries.length === 0){
+    html += emptyState(t('bazar.empty'));
+  } else {
+    entries.forEach(function(b){
+      var mem = members.filter(function(m){ return m.id === b.memberId; })[0];
+      html += '<div class="mh-list-row">';
+      html += '<div><div class="mh-list-main">' + escapeHtml(b.item || t('tabs.bazar')) + '</div>';
+      html += '<div class="mh-list-sub">' + b.date + ' &middot; ' + escapeHtml(mem ? mem.name : t('bazar.unknown')) + '</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<div class="mh-list-amt">৳' + fmtNum(b.amount) + '</div>';
+      if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.deleteBazar(\'' + b.id + '\')">🗑️</button>';
+      }
+      html += '</div></div>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ---------------- OTHER EXPENSES (rent / electricity / water / other) ---------------- */
+function renderExpenses(){
+  var c = calcMonth(S.ym);
+  var entries = S.data.expenses.filter(function(x){ return x.date.indexOf(S.ym) === 0; })
+    .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var total = entries.reduce(function(s,x){ return s + (parseFloat(x.amount)||0); }, 0);
+
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('expenses.title') + '</span><span class="mh-eyebrow">' + t('bazar.totalLabel') + ' ৳' + fmtNum(total) + '</span></div>';
+  html += '<div class="mh-note-banner">' + t('expenses.infoBanner1') + '৳' + fmtNum(c.otherShare) + t('expenses.infoBanner2') + c.activeCount + t('expenses.infoBanner3') + '</div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-form-grid">';
+    html += fieldInput('mh-exp-date', t('meals.date'), 'date', todayStr());
+    html += categorySelect('mh-exp-category');
+    html += '</div>';
+    html += '<div class="mh-field"><label>' + t('expenses.noteLabel') + '</label><input id="mh-exp-note" type="text" placeholder="' + t('expenses.notePlaceholder') + '"></div>';
+    html += '<div class="mh-field"><label>' + t('expenses.amountLabel') + '</label><input id="mh-exp-amount" type="number" min="0" step="0.01" placeholder="৳ 0.00"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addExpense()">' + t('expenses.addBtn') + '</button>';
+    html += '</div>';
+  }
+
+  html += '<div class="mh-card">';
+  if(entries.length === 0){
+    html += emptyState(t('expenses.empty'));
+  } else {
+    entries.forEach(function(x){
+      var cat = EXPENSE_CATEGORIES[x.category] || EXPENSE_CATEGORIES.other;
+      html += '<div class="mh-list-row">';
+      html += '<div><div class="mh-list-main">' + cat.icon + ' ' + escapeHtml(t('categories.' + x.category)) + '</div>';
+      html += '<div class="mh-list-sub">' + x.date + (x.note ? ' &middot; ' + escapeHtml(x.note) : '') + '</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<div class="mh-list-amt">৳' + fmtNum(x.amount) + '</div>';
+      if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.deleteExpense(\'' + x.id + '\')">🗑️</button>';
+      }
+      html += '</div></div>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+function categorySelect(id){
+  var html = '<div class="mh-field"><label>' + t('expenses.categoryLabel') + '</label><select id="' + id + '">';
+  Object.keys(EXPENSE_CATEGORIES).forEach(function(key){
+    html += '<option value="' + key + '">' + EXPENSE_CATEGORIES[key].icon + ' ' + escapeHtml(t('categories.' + key)) + '</option>';
+  });
+  html += '</select></div>';
+  return html;
+}
+
+/* ---------------- DEPOSITS ---------------- */
+function renderDeposits(){
+  var members = S.data.members;
+  var entries = S.data.deposits.filter(function(d){ return d.date.indexOf(S.ym) === 0; })
+    .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var total = entries.reduce(function(s,d){ return s + (parseFloat(d.amount)||0); }, 0);
+
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('deposits.title') + '</span><span class="mh-eyebrow">' + t('deposits.totalLabel') + ' ৳' + fmtNum(total) + '</span></div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-form-grid">';
+    html += fieldSelect('mh-dep-member', t('deposits.memberLabel'), activeMembers());
+    html += fieldInput('mh-dep-date', t('deposits.dateLabel'), 'date', todayStr());
+    html += '</div>';
+    html += '<div class="mh-field"><label>' + t('deposits.amountLabel') + '</label><input id="mh-dep-amount" type="number" min="0" step="0.01" placeholder="৳ 0.00"></div>';
+    html += '<div class="mh-field"><label>' + t('deposits.noteLabel') + '</label><input id="mh-dep-note" type="text" placeholder="' + t('deposits.notePlaceholder') + '"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addDeposit()">' + t('deposits.addBtn') + '</button>';
+    html += '</div>';
+  }
+
+  html += '<div class="mh-card">';
+  if(entries.length === 0){
+    html += emptyState(t('deposits.empty'));
+  } else {
+    entries.forEach(function(d){
+      var mem = members.filter(function(m){ return m.id === d.memberId; })[0];
+      html += '<div class="mh-list-row">';
+      html += '<div><div class="mh-list-main">' + escapeHtml(mem ? mem.name : t('bazar.unknown')) + '</div>';
+      html += '<div class="mh-list-sub">' + d.date + (d.note ? ' &middot; ' + escapeHtml(d.note) : '') + '</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<div class="mh-list-amt" style="color:var(--green);">+৳' + fmtNum(d.amount) + '</div>';
+      if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.deleteDeposit(\'' + d.id + '\')">🗑️</button>';
+      }
+      html += '</div></div>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ---------------- MEMBERS ---------------- */
+function renderMembers(){
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('members.title') + '</span></div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-field"><label>' + t('members.newMemberLabel') + '</label><input id="mh-new-member" type="text" placeholder="' + t('members.newMemberPlaceholder') + '"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addMember()">' + t('members.addBtn') + '</button>';
+    html += '</div>';
+  }
+
+  html += '<div class="mh-section-title"><span>' + t('members.activeSection') + '</span><span class="mh-eyebrow">' + activeMembers().length + t('members.personSuffix') + '</span></div>';
+  html += '<div class="mh-card">';
+  var act = activeMembers();
+  if(act.length === 0){
+    html += emptyState(t('members.empty'));
+  } else {
+    act.forEach(function(m){
+      html += '<div class="mh-list-row">';
+      html += '<div style="display:flex;align-items:center;gap:10px;">';
+      html += '<span style="width:10px;height:10px;border-radius:50%;background:' + m.color + ';display:inline-block;"></span>';
+      html += '<span class="mh-list-main">' + escapeHtml(m.name) + (m.id === S.data.managerId ? ' <span class="mh-chip">' + t('manager.label') + '</span>' : '') + '</span>';
+      html += '</div>';
+      if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.archiveMember(\'' + m.id + '\')" title="' + t('members.reactivateBtn') + '">🗑️</button>';
+      }
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+
+  var arch = archivedMembers();
+  if(arch.length > 0){
+    html += '<div class="mh-section-title"><span>' + t('members.archivedSection') + '</span><span class="mh-eyebrow">' + t('members.archivedEyebrow') + '</span></div>';
+    html += '<div class="mh-card">';
+    arch.forEach(function(m){
+      html += '<div class="mh-list-row">';
+      html += '<div style="display:flex;align-items:center;gap:10px;">';
+      html += '<span style="width:10px;height:10px;border-radius:50%;background:' + m.color + ';display:inline-block;opacity:0.5;"></span>';
+      html += '<span class="mh-list-main" style="color:var(--ink-soft);">' + escapeHtml(m.name) + '</span>';
+      html += '</div>';
+      if(S.isAdmin){
+        html += '<button class="mh-btn mh-btn-ghost mh-btn-sm" onclick="MH.reactivateMember(\'' + m.id + '\')">' + t('members.reactivateBtn') + '</button>';
+      }
+      html += '</div>';
+    });
+    html += '<p style="font-size:11px;color:var(--ink-soft);margin:10px 0 0;">' + t('members.archiveNote') + '</p>';
+    html += '</div>';
+  }
+  return html;
+}
+
+/* ---------------- SETTINGS ---------------- */
+function renderSettings(){
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('settings.title') + '</span></div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-field"><label>' + t('settings.messNameLabel') + '</label>';
+    html += '<div style="display:flex;gap:8px;"><input id="mh-mess-name" type="text" value="' + escapeHtml(S.data.messName || '') + '" style="flex:1;"><button class="mh-btn mh-btn-ghost mh-btn-sm" onclick="MH.updateMessName()">' + t('settings.saveBtn') + '</button></div></div>';
+    html += '</div>';
+  }
+
+  html += '<div class="mh-card">';
+  html += '<div class="mh-field" style="margin-bottom:14px;"><label>' + t('settings.themeTitle') + '</label>';
+  html += '<div class="mh-seg"><button class="' + (S.theme==='light'?'active':'') + '" onclick="MH.setTheme(\'light\')">' + t('settings.themeLight') + '</button><button class="' + (S.theme==='dark'?'active':'') + '" onclick="MH.setTheme(\'dark\')">' + t('settings.themeDark') + '</button></div></div>';
+  html += '<div class="mh-field"><label>' + t('settings.langTitle') + '</label>';
+  html += '<div class="mh-seg"><button class="' + (S.lang==='bn'?'active':'') + '" onclick="MH.setLang(\'bn\')">' + t('settings.langBn') + '</button><button class="' + (S.lang==='en'?'active':'') + '" onclick="MH.setLang(\'en\')">' + t('settings.langEn') + '</button></div></div>';
+  html += '</div>';
+
+  html += '<div class="mh-section-title"><span>' + t('settings.adminTitle') + '</span></div>';
+  html += '<div class="mh-card">';
+  var mgr = findMemberById(S.data.managerId);
+  html += '<div class="mh-list-row"><div class="mh-list-main">' + t('settings.currentManager') + '</div><div class="mh-list-amt" style="font-size:13px;">' + (mgr ? escapeHtml(mgr.name) : t('manager.none')) + '</div></div>';
+  if(S.isAdmin){
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" style="margin-top:10px;" onclick="MH.openChangeAdminModal()">' + t('settings.changeManagerBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-danger mh-btn-block" style="margin-top:8px;" onclick="MH.logoutAdmin()">' + t('settings.logoutBtn') + '</button>';
+  } else {
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" style="margin-top:10px;" onclick="MH.openAdminModal()">' + t('settings.loginBtn') + '</button>';
+  }
+  html += '<div style="border-top:1px dashed var(--rule);margin:14px 0 8px;"></div>';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;">' + t('settings.historyTitle') + '</div>';
+  var hist = S.data.managerHistory.slice().reverse().slice(0, 12);
+  if(hist.length === 0){
+    html += '<div style="font-size:12px;color:var(--ink-soft);">' + t('settings.noHistory') + '</div>';
+  } else {
+    hist.forEach(function(h){
+      html += '<div class="mh-history-row"><span class="mh-h-name">' + escapeHtml(h.name) + '</span><span class="mh-h-date">' + h.date + '</span></div>';
+    });
+  }
+  html += '</div>';
+
+  html += '<div class="mh-section-title"><span>' + t('settings.reportTitle') + '</span></div>';
+  html += '<div class="mh-card">';
+  html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">' + t('settings.reportDesc') + '</p>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.printReport()">' + t('settings.printBtn') + '</button>';
+  html += '<div id="mh-print-report" class="mh-print-only"></div>';
+  html += '</div>';
+
+  if(S.isAdmin){
+    html += '<div class="mh-section-title"><span>' + t('settings.backupTitle') + '</span></div>';
+    html += '<div class="mh-card">';
+    html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">' + t('settings.backupDesc') + '</p>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.downloadData()">' + t('settings.downloadBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.copyData()">' + t('settings.copyBtn') + '</button>';
+    html += '<div style="border-top:1px dashed var(--rule);margin:16px 0 12px;"></div>';
+    html += '<div class="mh-field"><label>' + t('settings.uploadFileLabel') + '</label><input id="mh-upload-file" type="file" accept=".json,application/json" onchange="MH.handleUploadFile(this)"></div>';
+    html += '<div style="text-align:center;font-size:11px;color:var(--ink-soft);margin:6px 0;">' + t('settings.or') + '</div>';
+    html += '<div class="mh-field"><label>' + t('settings.pasteLabel') + '</label><textarea id="mh-upload-paste" rows="4" placeholder="{ &quot;members&quot;: ... }" style="font-family:JetBrains Mono,monospace;font-size:12px;resize:vertical;"></textarea></div>';
+    html += '<button class="mh-btn mh-btn-danger mh-btn-block" onclick="MH.handleUploadPaste()">' + t('settings.uploadBtn') + '</button>';
+    html += '<p style="font-size:11px;color:var(--rust);margin:10px 0 0;">' + t('settings.backupWarning') + '</p>';
+    html += '</div>';
+  }
+  return html;
+}
+
+function fieldInput(id, label, type, defVal){
+  return '<div class="mh-field"><label>' + label + '</label><input id="' + id + '" type="' + type + '" value="' + (defVal||'') + '"></div>';
+}
+function fieldSelect(id, label, members){
+  var html = '<div class="mh-field"><label>' + label + '</label><select id="' + id + '">';
+  members.forEach(function(m){ html += '<option value="' + m.id + '">' + escapeHtml(m.name) + '</option>'; });
+  html += '</select></div>';
+  return html;
+}
+function emptyState(msg){
+  return '<div class="mh-empty"><span class="mh-serif">📭</span>' + msg + '</div>';
+}
+
+/* ---------------- ONBOARDING ACTIONS ---------------- */
+function syncOnboardName(input){ S.onboardName = input.value; }
+
+function addOnboardMember(){
+  var input = document.getElementById('mh-ob-member-input');
+  var name = input.value.trim();
+  if(!name) return;
+  S.onboardMembers.push(name);
+  input.value = '';
+  refreshOnboardMemberUI();
+  input.focus();
+}
+function removeOnboardMember(i){
+  S.onboardMembers.splice(i, 1);
+  refreshOnboardMemberUI();
+}
+
+async function finishOnboarding(){
+  var nameInput = document.getElementById('mh-ob-name');
+  var name = nameInput ? nameInput.value.trim() : S.onboardName.trim();
+  if(!name){ showToast(t('onboard.needName')); return; }
+  if(S.onboardMembers.length === 0){ showToast(t('onboard.needMember')); return; }
+
+  var managerSelect = document.getElementById('mh-ob-manager-select');
+  if(!managerSelect){ showToast(t('onboard.needManager')); return; }
+  var managerIndex = parseInt(managerSelect.value, 10);
+
+  var pinVal = null;
+  if(!S.pinExists){
+    var pinInput = document.getElementById('mh-ob-pin');
+    pinVal = pinInput ? pinInput.value.trim() : '';
+    if(pinVal.length < 4){ showToast(t('onboard.pinTooShort')); return; }
+  }
+
+  S.data.messName = name;
+  var newMembers = S.onboardMembers.map(function(n, i){
+    return { id: uid(), name: n, color: MEMBER_COLORS[i % MEMBER_COLORS.length], active: true };
+  });
+  S.data.members = newMembers;
+  var manager = newMembers[managerIndex] || newMembers[0];
+  S.data.managerId = manager.id;
+  S.data.managerHistory.push({ name: manager.name, date: todayStr() });
+
+  var ok = await saveData();
+  if(!ok) return;
+
+  if(pinVal){
+    try {
+      await window.storage.set(PIN_KEY, pinVal, true);
+      await window.storage.set(LOCAL_ADMIN_KEY, pinVal, false);
+      S.pinExists = true; S.isAdmin = true;
+    } catch(e){ showToast(t('admin.problemToast')); }
+  }
+
+  S.onboardMembers = []; S.onboardName = '';
+  render();
+  showToast(name + t('onboard.doneToastSuffix'));
+}
+
+/* ---------------- ADMIN MODAL ---------------- */
+function ensureOverlay(){
+  var overlay = document.getElementById('mh-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.className = 'mh-overlay';
+    overlay.id = 'mh-overlay';
+    overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+    document.getElementById('mh-root').appendChild(overlay);
+  }
+  return overlay;
+}
+
+function openAdminModal(){
+  var overlay = ensureOverlay();
+  var html = '';
+  if(S.isAdmin){
+    html += '<div class="mh-modal"><h3>' + t('admin.onTitle') + '</h3><p>' + t('admin.onDesc') + '</p>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openChangeAdminModal()">' + t('admin.changeBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-danger mh-btn-block" style="margin-top:8px;" onclick="MH.logoutAdmin()">' + t('admin.logoutBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.closeBtn') + '</button></div>';
+  } else if(!S.pinExists){
+    html += '<div class="mh-modal"><h3>' + t('admin.firstSetupTitle') + '</h3><p>' + t('admin.firstSetupDesc') + '</p>';
+    html += '<div class="mh-field"><label>' + t('admin.newPinLabel') + '</label><input id="mh-new-pin" type="password" inputmode="numeric" placeholder="1234"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.setupPin()">' + t('admin.setPinBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.cancelBtn') + '</button></div>';
+  } else {
+    html += '<div class="mh-modal"><h3>' + t('admin.enterPinTitle') + '</h3><p>' + t('admin.enterPinDesc') + '</p>';
+    html += '<div class="mh-field"><label>' + t('admin.pinLabel') + '</label><input id="mh-enter-pin" type="password" inputmode="numeric" placeholder="' + t('admin.pinPlaceholder') + '"></div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.checkPin()">' + t('admin.enterBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.cancelBtn') + '</button></div>';
+  }
+  overlay.innerHTML = html;
+}
+function closeModal(){
+  var el = document.getElementById('mh-overlay');
+  if(el) el.remove();
+}
+
+async function setupPin(){
+  var val = document.getElementById('mh-new-pin').value.trim();
+  if(val.length < 4){ showToast(t('onboard.pinTooShort')); return; }
+  try {
+    await window.storage.set(PIN_KEY, val, true);
+    await window.storage.set(LOCAL_ADMIN_KEY, val, false);
+    S.pinExists = true; S.isAdmin = true;
+    closeModal(); render(); showToast(t('admin.onToast'));
+  } catch(e){ showToast(t('admin.problemToast')); }
+}
+
+async function checkPin(){
+  var val = document.getElementById('mh-enter-pin').value.trim();
+  try {
+    var res = await window.storage.get(PIN_KEY, true);
+    var pin = res && res.value ? res.value : null;
+    if(pin && pin === val){
+      await window.storage.set(LOCAL_ADMIN_KEY, val, false);
+      S.isAdmin = true; closeModal(); render(); showToast(t('admin.onToast'));
+    } else {
+      showToast(t('admin.wrongPin'));
+    }
+  } catch(e){ showToast(t('admin.problemToast')); }
+}
+
+async function logoutAdmin(){
+  try { await window.storage.set(LOCAL_ADMIN_KEY, '', false); } catch(e){}
+  S.isAdmin = false; closeModal(); render(); showToast(t('admin.offToast'));
+}
+
+/* Monthly manager handover: current admin picks the new manager from the
+   member list and sets a brand-new pin. Every device (including this one,
+   unless it re-enters the new pin) will drop back to view mode next sync. */
+function openChangeAdminModal(){
+  var act = activeMembers();
+  if(act.length === 0){ showToast(t('admin.noActiveMembers')); return; }
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('admin.changeTitle') + '</h3>';
+  html += '<p>' + t('admin.changeDesc') + '</p>';
+  html += '<div class="mh-field"><label>' + t('admin.chooseManagerLabel') + '</label><select id="mh-change-manager-select">';
+  act.forEach(function(m){
+    html += '<option value="' + m.id + '"' + (m.id === S.data.managerId ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>';
+  });
+  html += '</select></div>';
+  html += '<div class="mh-field"><label>' + t('admin.newPinLabel2') + '</label><input id="mh-change-pin" type="password" inputmode="numeric" placeholder="5678"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.confirmChangeAdmin()">' + t('admin.setBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openAdminModal()">' + t('admin.backBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+
+async function confirmChangeAdmin(){
+  var val = document.getElementById('mh-change-pin').value.trim();
+  var managerId = document.getElementById('mh-change-manager-select').value;
+  if(!managerId){ showToast(t('admin.needManagerToast')); return; }
+  if(val.length < 4){ showToast(t('onboard.pinTooShort')); return; }
+  try {
+    await window.storage.set(PIN_KEY, val, true);
+    await window.storage.set(LOCAL_ADMIN_KEY, val, false);
+    S.isAdmin = true;
+    S.data.managerId = managerId;
+    var mem = findMemberById(managerId);
+    S.data.managerHistory.push({ name: mem ? mem.name : '', date: todayStr() });
+    await saveData();
+    closeModal(); render();
+    showToast(t('admin.changedToast'));
+  } catch(e){ showToast(t('admin.problemToast')); }
+}
+
+/* ---------------- ACTIONS ---------------- */
+async function updateMeal(input){
+  var date = input.getAttribute('data-date');
+  var memberId = input.getAttribute('data-member');
+  var val = input.value;
+  if(!S.data.meals[date]) S.data.meals[date] = {};
+  if(val === ''){ delete S.data.meals[date][memberId]; }
+  else { S.data.meals[date][memberId] = parseFloat(val); }
+  var ok = await saveData();
+  if(ok) render();
+}
+
+async function addBazar(){
+  var date = document.getElementById('mh-bazar-date').value || todayStr();
+  var memberId = document.getElementById('mh-bazar-member').value;
+  var item = document.getElementById('mh-bazar-item').value.trim();
+  var amount = parseFloat(document.getElementById('mh-bazar-amount').value);
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  S.data.bazar.push({ id: uid(), date: date, memberId: memberId, item: item, amount: amount });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.bazarAdded')); }
+}
+async function deleteBazar(id){
+  S.data.bazar = S.data.bazar.filter(function(b){ return b.id !== id; });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.deleted')); }
+}
+
+async function addExpense(){
+  var date = document.getElementById('mh-exp-date').value || todayStr();
+  var category = document.getElementById('mh-exp-category').value;
+  var note = document.getElementById('mh-exp-note').value.trim();
+  var amount = parseFloat(document.getElementById('mh-exp-amount').value);
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  S.data.expenses.push({ id: uid(), date: date, category: category, note: note, amount: amount });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.expenseAdded')); }
+}
+async function deleteExpense(id){
+  S.data.expenses = S.data.expenses.filter(function(x){ return x.id !== id; });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.deleted')); }
+}
+
+async function addDeposit(){
+  var memberId = document.getElementById('mh-dep-member').value;
+  var date = document.getElementById('mh-dep-date').value || todayStr();
+  var amount = parseFloat(document.getElementById('mh-dep-amount').value);
+  var note = document.getElementById('mh-dep-note').value.trim();
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  S.data.deposits.push({ id: uid(), memberId: memberId, date: date, amount: amount, note: note });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.depositAdded')); }
+}
+async function deleteDeposit(id){
+  S.data.deposits = S.data.deposits.filter(function(d){ return d.id !== id; });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.deleted')); }
+}
+
+async function addMember(){
+  var input = document.getElementById('mh-new-member');
+  var name = input.value.trim();
+  if(!name){ showToast(t('toast.nameRequired')); return; }
+  var color = MEMBER_COLORS[S.data.members.length % MEMBER_COLORS.length];
+  S.data.members.push({ id: uid(), name: name, color: color, active: true });
+  var ok = await saveData();
+  if(ok){ render(); showToast(name + t('toast.memberAddedSuffix')); }
+}
+async function archiveMember(id){
+  var mem = findMemberById(id);
+  var name = mem ? mem.name : '';
+  if(!window.confirm(name + t('members.archiveConfirm'))) return;
+  S.data.members.forEach(function(m){ if(m.id === id) m.active = false; });
+  var ok = await saveData();
+  if(ok){ render(); showToast(name + t('toast.memberArchivedSuffix')); }
+}
+async function reactivateMember(id){
+  var mem = findMemberById(id);
+  S.data.members.forEach(function(m){ if(m.id === id) m.active = true; });
+  var ok = await saveData();
+  if(ok){ render(); showToast((mem ? mem.name : '') + t('toast.memberReactivatedSuffix')); }
+}
+async function updateMessName(){
+  var input = document.getElementById('mh-mess-name');
+  var name = input.value.trim();
+  if(!name){ showToast(t('toast.messNameRequired')); return; }
+  S.data.messName = name;
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.messNameUpdated')); }
+}
+
+/* ---------------- THEME / LANGUAGE ---------------- */
+async function setTheme(theme){
+  S.theme = theme;
+  try { await window.storage.set(THEME_KEY, theme, false); } catch(e){}
+  render();
+}
+async function setLang(lang){
+  S.lang = lang;
+  try { await window.storage.set(LANG_KEY, lang, false); } catch(e){}
+  render();
+}
+
+/* ---------------- PRINT REPORT ---------------- */
+function buildPrintReport(){
+  var c = calcMonth(S.ym);
+  var mgr = findMemberById(S.data.managerId);
+  var html = '<div class="mh-print-report">';
+  html += '<h1>' + escapeHtml(S.data.messName || t('app.defaultName')) + '</h1>';
+  html += '<div class="mh-print-meta">' + t('print.title') + ' &mdash; ' + ymLabel(S.ym) + '<br>';
+  html += t('print.manager') + ': ' + escapeHtml(mgr ? mgr.name : t('manager.none')) + ' &middot; ' + t('print.generated') + ': ' + todayStr() + '</div>';
+
+  html += '<table><thead><tr><th>' + t('print.memberCol') + '</th><th>' + t('print.mealsCol') + '</th><th>' + t('print.mealCostCol') + '</th><th>' + t('print.sharedCostCol') + '</th><th>' + t('print.totalCostCol') + '</th><th>' + t('print.depositCol') + '</th><th>' + t('print.balanceCol') + '</th></tr></thead><tbody>';
+  c.members.forEach(function(m){
+    var pm = c.perMember[m.id];
+    html += '<tr><td>' + escapeHtml(m.name) + '</td><td>' + fmtInt(pm.meals) + '</td><td>' + fmtInt(pm.mealCost) + '</td><td>' + fmtInt(pm.otherShare) + '</td><td>' + fmtInt(pm.cost) + '</td><td>' + fmtInt(pm.deposit) + '</td><td>' + fmtInt(pm.balance) + '</td></tr>';
+  });
+  html += '<tr><td><b>' + t('print.totalsRow') + '</b></td><td><b>' + fmtInt(c.totalMeals) + '</b></td><td><b>' + fmtInt(c.totalCost) + '</b></td><td><b>' + fmtInt(c.totalOther) + '</b></td><td><b>' + fmtInt(c.totalCost + c.totalOther) + '</b></td><td><b>' + fmtInt(c.totalDeposit) + '</b></td><td><b>' + fmtInt(c.totalRemaining) + '</b></td></tr>';
+  html += '</tbody></table>';
+
+  var bazarEntries = S.data.bazar.filter(function(b){ return b.date.indexOf(S.ym) === 0; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  html += '<div class="mh-print-section-title">' + t('print.bazarSectionTitle') + '</div>';
+  if(bazarEntries.length === 0){
+    html += '<p>' + t('print.noEntries') + '</p>';
+  } else {
+    html += '<table><thead><tr><th>' + t('print.dateCol') + '</th><th>' + t('print.itemCol') + '</th><th>' + t('print.amountCol') + '</th></tr></thead><tbody>';
+    bazarEntries.forEach(function(b){
+      var mem = findMemberById(b.memberId);
+      var detail = (b.item || '') + (mem ? (' - ' + mem.name) : '');
+      html += '<tr><td>' + b.date + '</td><td>' + escapeHtml(detail) + '</td><td>' + fmtNum(b.amount) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  var expEntries = S.data.expenses.filter(function(x){ return x.date.indexOf(S.ym) === 0; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  html += '<div class="mh-print-section-title">' + t('print.expenseSectionTitle') + '</div>';
+  if(expEntries.length === 0){
+    html += '<p>' + t('print.noEntries') + '</p>';
+  } else {
+    html += '<table><thead><tr><th>' + t('print.dateCol') + '</th><th>' + t('print.itemCol') + '</th><th>' + t('print.amountCol') + '</th></tr></thead><tbody>';
+    expEntries.forEach(function(x){
+      var label = t('categories.' + x.category) + (x.note ? (' - ' + x.note) : '');
+      html += '<tr><td>' + x.date + '</td><td>' + escapeHtml(label) + '</td><td>' + fmtNum(x.amount) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  html += '</div>';
+  var container = document.getElementById('mh-print-report');
+  if(container) container.innerHTML = html;
+}
+function printReport(){
+  buildPrintReport();
+  setTimeout(function(){ window.print(); }, 60);
+}
+
+/* ---------------- BACKUP / RESTORE ---------------- */
+function downloadData(){
+  try {
+    var json = JSON.stringify(S.data, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'mess-hishab-backup-' + todayStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    showToast(t('toast.downloadStarted'));
+  } catch(e){
+    showToast(t('toast.downloadFailed'));
+  }
+}
+
+async function copyData(){
+  try {
+    var json = JSON.stringify(S.data, null, 2);
+    await navigator.clipboard.writeText(json);
+    showToast(t('toast.copied'));
+  } catch(e){
+    showToast(t('toast.copyFailed'));
+  }
+}
+
+function validateImportedData(obj){
+  return obj && typeof obj === 'object' &&
+    Array.isArray(obj.members) &&
+    obj.meals && typeof obj.meals === 'object' &&
+    Array.isArray(obj.bazar) &&
+    Array.isArray(obj.deposits);
+}
+
+function handleUploadFile(input){
+  var file = input.files && input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    confirmAndImport(e.target.result);
+    input.value = '';
+  };
+  reader.onerror = function(){ showToast(t('toast.fileReadFailed')); };
+  reader.readAsText(file);
+}
+
+function handleUploadPaste(){
+  var text = document.getElementById('mh-upload-paste').value.trim();
+  if(!text){ showToast(t('toast.pasteFirst')); return; }
+  confirmAndImport(text);
+}
+
+function confirmAndImport(text){
+  var parsed;
+  try { parsed = JSON.parse(text); } catch(e){ showToast(t('toast.invalidJson')); return; }
+  if(!validateImportedData(parsed)){ showToast(t('toast.invalidBackup')); return; }
+  var overlay = document.createElement('div');
+  overlay.className = 'mh-overlay';
+  overlay.id = 'mh-import-overlay';
+  var html = '<div class="mh-modal"><h3>' + t('importConfirm.title') + '</h3>';
+  html += '<p>' + t('importConfirm.hasPrefix') + parsed.members.length + t('importConfirm.membersWord') + parsed.bazar.length + t('importConfirm.bazarWord') + parsed.deposits.length + t('importConfirm.depositsWord') + '<b>' + t('importConfirm.boldWarn') + '</b>' + t('importConfirm.afterBold') + '</p>';
+  html += '<button class="mh-btn mh-btn-danger mh-btn-block" onclick="MH.applyImport()">' + t('importConfirm.confirmBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="document.getElementById(\'mh-import-overlay\').remove()">' + t('importConfirm.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) overlay.remove(); });
+  document.getElementById('mh-root').appendChild(overlay);
+  S._pendingImport = parsed;
+}
+
+async function applyImport(){
+  if(!S._pendingImport) return;
+  S.data = S._pendingImport;
+  normalizeData();
+  S._pendingImport = null;
+  var overlay = document.getElementById('mh-import-overlay');
+  if(overlay) overlay.remove();
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('toast.restored')); }
+}
+
+function setTab(tb){ S.tab = tb; render(); }
+function shiftMonth(delta){
+  var p = S.ym.split('-'); var y = parseInt(p[0],10), m = parseInt(p[1],10);
+  m += delta;
+  if(m < 1){ m = 12; y -= 1; } else if(m > 12){ m = 1; y += 1; }
+  S.ym = y + '-' + pad2(m);
+  render();
+}
+
+function attachGlobalHandlers(){
+  document.querySelectorAll('.mh-meal-input').forEach(function(el){
+    el.classList.add('mh-live-guard');
+  });
+}
+
+/* ---------------- INIT ---------------- */
+window.MH = {
+  openAdminModal: openAdminModal, closeModal: closeModal, setupPin: setupPin, checkPin: checkPin, logoutAdmin: logoutAdmin,
+  openChangeAdminModal: openChangeAdminModal, confirmChangeAdmin: confirmChangeAdmin,
+  updateMeal: updateMeal, addBazar: addBazar, deleteBazar: deleteBazar, addExpense: addExpense, deleteExpense: deleteExpense,
+  addDeposit: addDeposit, deleteDeposit: deleteDeposit,
+  addMember: addMember, archiveMember: archiveMember, reactivateMember: reactivateMember, updateMessName: updateMessName,
+  setTab: setTab, shiftMonth: shiftMonth, setTheme: setTheme, setLang: setLang, printReport: printReport,
+  downloadData: downloadData, copyData: copyData, handleUploadFile: handleUploadFile, handleUploadPaste: handleUploadPaste,
+  applyImport: applyImport,
+  syncOnboardName: syncOnboardName, addOnboardMember: addOnboardMember, removeOnboardMember: removeOnboardMember, finishOnboarding: finishOnboarding
+};
+
+(async function init(){
+  await loadAll();
+  render();
+  setInterval(pollForUpdates, 7000);
+  setInterval(updateSyncLabel, 5000);
+})();
+
+})();
+</script>
+
+</body>
+</html>
