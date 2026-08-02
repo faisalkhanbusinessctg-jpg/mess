@@ -2,12 +2,27 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>মেস হিসাব</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 
 * { box-sizing: border-box; }
+
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+#mh-root input, #mh-root textarea, #mh-root select {
+  -webkit-user-select: text; user-select: text;
+}
 
 #mh-root {
   --paper: #F7F1E2;
@@ -18,6 +33,8 @@
   --ink-soft: #7A6F5C;
   --rule: #CBBFA0;
   --green: #2F6F4E;
+  --green-hi: #3E8862;
+  --green-shadow: #1F4C34;
   --green-soft: #E3EEE6;
   --rust: #B5482F;
   --rust-soft: #F6E4DD;
@@ -25,6 +42,9 @@
   --gold-dark: #B9852A;
   --navy: #2B3A55;
   --cover: #2B2620;
+  --header-1: #2F6F4E;
+  --header-2: #1F4D37;
+  --header-line: rgba(217,164,65,0.18);
   font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   background: var(--paper);
   color: var(--ink);
@@ -45,6 +65,8 @@
   --ink-soft: #A79A82;
   --rule: #453E30;
   --green: #55B685;
+  --green-hi: #71CC9E;
+  --green-shadow: #163625;
   --green-soft: #203327;
   --rust: #E4886A;
   --rust-soft: #3A2620;
@@ -52,28 +74,38 @@
   --gold-dark: #C99A3E;
   --navy: #8FA8D0;
   --cover: #131110;
+  --header-1: #1B3327;
+  --header-2: #0F1F18;
+  --header-line: rgba(236,190,104,0.14);
 }
 
 #mh-root .mh-serif { font-family: 'Tiro Bangla', 'Noto Serif Bengali', serif; }
-#mh-root .mh-mono { font-family: 'JetBrains Mono', monospace; }
+#mh-root .mh-mono { font-family: 'Roboto Mono', monospace; }
 
 #mh-root .mh-shell { max-width: 720px; margin: 0 auto; padding: 16px 14px 60px; }
 
 /* ---------- HEADER ---------- */
 #mh-root .mh-header {
-  background: var(--cover);
-  background-image: linear-gradient(135deg, #2B2620 0%, #3A3226 100%);
+  background: var(--header-2);
+  background-image: linear-gradient(135deg, var(--header-1) 0%, var(--header-2) 100%);
   border-radius: 14px;
   padding: 18px 18px 16px;
   color: var(--paper);
   position: relative;
   overflow: hidden;
   margin-bottom: 14px;
+  box-shadow: 0 8px 20px -10px rgba(31,77,55,0.45);
+}
+#mh-root .mh-header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+  opacity: 0.85;
 }
 #mh-root .mh-header::after {
   content: '';
   position: absolute; inset: 0;
-  background-image: repeating-linear-gradient(90deg, rgba(217,164,65,0.06) 0 1px, transparent 1px 22px);
+  background-image: repeating-linear-gradient(90deg, var(--header-line) 0 1px, transparent 1px 22px);
   pointer-events: none;
 }
 #mh-root .mh-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -91,6 +123,18 @@
   cursor: pointer;
 }
 #mh-root .mh-lock-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+#mh-root .mh-header-actions { display:flex; align-items:center; gap:8px; }
+#mh-root .mh-icon-round-btn {
+  background: rgba(217,164,65,0.15);
+  border: 1px solid rgba(217,164,65,0.5);
+  color: var(--gold);
+  border-radius: 999px;
+  width: 32px; height: 32px;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 14px;
+  cursor: pointer;
+}
+#mh-root .mh-icon-round-btn.active { background: var(--gold); color: var(--cover); }
 
 #mh-root .mh-manager-badge {
   margin-top: 10px; font-size: 12px; color: #EADFC0; background: rgba(217,164,65,0.12);
@@ -114,18 +158,37 @@
 #mh-root .mh-sync-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(47,111,78,0.6); animation: mh-pulse 2s infinite; }
 @keyframes mh-pulse { 0%{box-shadow:0 0 0 0 rgba(47,111,78,0.5);} 70%{box-shadow:0 0 0 6px rgba(47,111,78,0);} 100%{box-shadow:0 0 0 0 rgba(47,111,78,0);} }
 
-/* ---------- TABS ---------- */
-#mh-root .mh-tabs {
-  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px;
-  scrollbar-width: none;
+/* ---------- BOTTOM NAV ---------- */
+#mh-bottom-nav {
+  position: fixed; left:0; right:0; bottom:0; z-index: 60;
+  display: flex; gap: 2px; max-width: 720px; margin: 0 auto;
+  background: var(--header-2);
+  background-image: linear-gradient(135deg, var(--header-1) 0%, var(--header-2) 100%);
+  padding: 8px 4px calc(7px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.28);
 }
-#mh-root .mh-tabs::-webkit-scrollbar { display: none; }
-#mh-root .mh-tab {
-  flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--rule);
-  background: var(--card); color: var(--ink-soft); font-size: 13px; font-weight: 600; cursor: pointer;
-  white-space: nowrap;
+#mh-bottom-nav::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+  opacity: 0.85;
 }
-#mh-root .mh-tab.active { background: var(--cover); color: var(--gold); border-color: var(--cover); }
+#mh-bottom-nav .mh-nav-item {
+  flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 2px;
+  background:none; border:none; color: rgba(217,164,65,0.5); font-size: 9.5px; font-weight:700; cursor:pointer;
+  padding: 6px 1px; border-radius: 11px; min-width:0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+}
+#mh-bottom-nav .mh-nav-icon { font-size: 19px; line-height:1; opacity:0.7; }
+#mh-bottom-nav .mh-nav-label { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+#mh-bottom-nav .mh-nav-item.active { color: var(--gold); background: rgba(217,164,65,0.16); }
+#mh-bottom-nav .mh-nav-item.active .mh-nav-icon { opacity:1; }
+#mh-bottom-nav .mh-nav-item:active { transform: scale(0.92); }
+#mh-tab-content { padding-bottom: 86px; }
+
+@keyframes mh-tab-slide { from { opacity:0; transform: translateX(14px); } to { opacity:1; transform: translateX(0); } }
+#mh-root .mh-tab-anim { animation: mh-tab-slide 0.22s ease; }
 
 /* ---------- CARDS / SECTIONS ---------- */
 #mh-root .mh-section-title {
@@ -136,20 +199,20 @@
   background: #F1DFB4; padding: 2px 8px; border-radius: 5px; font-weight:700;
 }
 #mh-root .mh-card {
-  background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px;
-  margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 14px;
+  margin-bottom: 14px; box-shadow: 0 2px 10px rgba(43,38,32,0.06);
 }
 
 /* summary stat strip */
 #mh-root .mh-stat-strip { display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-bottom:16px; }
-#mh-root .mh-stat { background: var(--card); border:1px solid var(--rule); border-radius:10px; padding:10px 8px; text-align:center; }
-#mh-root .mh-stat .mh-stat-num { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:var(--navy); }
+#mh-root .mh-stat { background: var(--card); border:1px solid var(--rule); border-radius:12px; padding:12px 8px; text-align:center; box-shadow: 0 2px 8px rgba(43,38,32,0.06); }
+#mh-root .mh-stat .mh-stat-num { font-family:'Roboto Mono',monospace; font-size:15px; font-weight:700; color:var(--navy); }
 #mh-root .mh-stat .mh-stat-label { font-size:10px; color:var(--ink-soft); margin-top:2px; }
 
 /* remaining-fund hero */
-#mh-root .mh-fund-card { border:1.5px solid var(--rule); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px; }
+#mh-root .mh-fund-card { border:1.5px solid var(--rule); border-radius:16px; padding:16px; text-align:center; margin-bottom:14px; box-shadow: 0 3px 12px rgba(43,38,32,0.07); }
 #mh-root .mh-fund-label { font-size:12px; color:var(--ink-soft); font-weight:600; margin-bottom:4px; }
-#mh-root .mh-fund-amount { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; }
+#mh-root .mh-fund-amount { font-family:'Roboto Mono',monospace; font-size:28px; font-weight:700; }
 #mh-root .mh-fund-sub { font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
 
 /* hanging tag cards (signature element) */
@@ -191,7 +254,7 @@
 }
 #mh-root .mh-tag-name { font-weight:700; font-size:13.5px; text-align:left; line-height:1.2; }
 #mh-root .mh-tag-name .mh-tag-archived-badge { display:block; font-size:9.5px; font-weight:600; color: var(--ink-soft); margin-top:1px; }
-#mh-root .mh-tag-balance { font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px; }
+#mh-root .mh-tag-balance { font-family:'Roboto Mono',monospace; font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px; }
 #mh-root .mh-tag-balance .mh-arrow { font-size:14px; }
 #mh-root .mh-tag-status { font-size:10.5px; margin-top:3px; font-weight:600; letter-spacing:0.2px; }
 #mh-root .mh-tag-meta { font-size:10.5px; color: var(--ink-soft); margin-top:10px; display:flex; justify-content:space-between; border-top:1px dashed var(--rule); padding-top:7px; }
@@ -207,14 +270,34 @@
 #mh-root table.mh-table thead th {
   background: var(--paper-dark); font-family:'Tiro Bangla',serif; font-weight:400; font-size:13px; position: sticky; top:0;
 }
-#mh-root table.mh-table td.mh-date-cell { text-align:left; color: var(--ink-soft); font-family:'JetBrains Mono',monospace; font-size:12px; background: var(--paper); }
+#mh-root table.mh-table td.mh-date-cell { text-align:left; color: var(--ink-soft); font-family:'Roboto Mono',monospace; font-size:12px; background: var(--paper); }
 #mh-root table.mh-table tr.mh-today td { background: #FBF0D6; }
-#mh-root table.mh-table tfoot td { background: var(--paper-dark); font-weight:700; font-family:'JetBrains Mono',monospace; }
+#mh-root table.mh-table tfoot td { background: var(--paper-dark); font-weight:700; font-family:'Roboto Mono',monospace; }
 #mh-root .mh-meal-input {
   width: 40px; text-align:center; border:1px solid var(--rule); border-radius:6px; padding:4px 2px;
-  font-family:'JetBrains Mono',monospace; font-size:13px; background:#fff; color:#111;
+  font-family:'Roboto Mono',monospace; font-size:13px; background:#fff; color:#111;
 }
 #mh-root .mh-meal-input:disabled { background: transparent; border-color:transparent; color: var(--ink); }
+#mh-root .mh-meal-entry-row {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 4px; border-bottom:1px solid var(--rule);
+}
+#mh-root .mh-meal-entry-row:last-child { border-bottom:none; }
+#mh-root .mh-meal-entry-who { display:flex; align-items:center; gap:10px; }
+#mh-root .mh-meal-entry-avatar {
+  width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:700; font-size:13px; flex-shrink:0;
+}
+#mh-root .mh-meal-entry-name { font-size:13.5px; font-weight:600; }
+#mh-root .mh-meal-entry-input {
+  width:64px; text-align:center; border:1px solid var(--rule); border-radius:8px; padding:8px 4px;
+  font-family:'Roboto Mono',monospace; font-size:15px; background:#fff; color:#111;
+}
+#mh-root .mh-meal-entry-total {
+  display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding:12px 14px;
+  background: var(--paper-dark); border-radius:10px; font-weight:700;
+}
+#mh-root .mh-meal-entry-total-num { font-family:'Roboto Mono',monospace; font-size:16px; }
 
 /* forms */
 #mh-root .mh-form-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
@@ -225,15 +308,29 @@
   font-family:'Hind Siliguri',sans-serif;
 }
 #mh-root .mh-btn {
-  border:none; border-radius:9px; padding:10px 16px; font-weight:700; font-size:13.5px; cursor:pointer;
-  display:inline-flex; align-items:center; gap:6px; justify-content:center;
+  border:none; border-radius:12px; padding:11px 18px; font-weight:700; font-size:13.5px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; justify-content:center; letter-spacing:0.1px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
 }
-#mh-root .mh-btn-primary { background: var(--green); color:#fff; }
-#mh-root .mh-btn-primary:active { background:#255c40; }
-#mh-root .mh-btn-ghost { background: transparent; color: var(--ink-soft); border:1px solid var(--rule); }
-#mh-root .mh-btn-danger { background: var(--rust-soft); color: var(--rust); }
+#mh-root .mh-btn:active { transform: translateY(1.5px); }
+#mh-root .mh-btn:disabled { opacity:0.55; cursor:default; transform:none !important; }
+#mh-root .mh-btn-primary {
+  background: linear-gradient(180deg, var(--green-hi), var(--green));
+  color:#fff;
+  box-shadow: 0 3px 0 var(--green-shadow), 0 6px 14px rgba(47,111,78,0.25);
+}
+#mh-root .mh-btn-primary:active { box-shadow: 0 1px 0 var(--green-shadow), 0 2px 6px rgba(47,111,78,0.2); }
+#mh-root .mh-btn-ghost {
+  background: var(--card); color: var(--ink); border:1.5px solid var(--rule);
+  box-shadow: 0 2px 5px rgba(43,38,32,0.06);
+}
+#mh-root .mh-btn-ghost:active { background: var(--paper-dark); box-shadow:none; }
+#mh-root .mh-btn-danger {
+  background: var(--rust-soft); color: var(--rust); border:1.5px solid rgba(181,72,47,0.22);
+}
+#mh-root .mh-btn-danger:active { background: rgba(181,72,47,0.16); }
 #mh-root .mh-btn-block { width:100%; }
-#mh-root .mh-btn-sm { padding:6px 10px; font-size:12px; }
+#mh-root .mh-btn-sm { padding:7px 12px; font-size:12px; border-radius:9px; }
 
 #mh-root .mh-list-row {
   display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -242,9 +339,10 @@
 #mh-root .mh-list-row:last-child { border-bottom:none; }
 #mh-root .mh-list-main { font-size:13.5px; font-weight:600; }
 #mh-root .mh-list-sub { font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
-#mh-root .mh-list-amt { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px; }
+#mh-root .mh-list-amt { font-family:'Roboto Mono',monospace; font-weight:700; font-size:14px; }
 #mh-root .mh-chip { font-size:10.5px; background: var(--green-soft); color:var(--green); padding:2px 8px; border-radius:999px; font-weight:700; }
-#mh-root .mh-icon-btn { background:none; border:none; color: var(--ink-soft); font-size:16px; cursor:pointer; padding:4px 6px; }
+#mh-root .mh-icon-btn { background:none; border:none; color: var(--ink-soft); font-size:16px; cursor:pointer; padding:6px 8px; border-radius:8px; transition: background 0.15s ease; }
+#mh-root .mh-icon-btn:active { background: var(--paper-dark); }
 
 #mh-root .mh-empty { text-align:center; padding:30px 10px; color: var(--ink-soft); font-size:13px; }
 #mh-root .mh-empty .mh-serif { font-size:15px; color:var(--ink); display:block; margin-bottom:4px; }
@@ -264,7 +362,13 @@
   position: fixed; bottom: 18px; left:50%; transform:translateX(-50%);
   background: var(--cover); color: var(--gold); padding:10px 18px; border-radius:999px; font-size:12.5px;
   font-weight:600; z-index:1100; box-shadow: 0 6px 18px rgba(0,0,0,0.25); max-width:88vw; text-align:center;
+  display:flex; align-items:center; gap:12px;
 }
+#mh-root .mh-toast-btn {
+  background:none; border:none; color: var(--gold); font-weight:700; text-decoration:underline;
+  cursor:pointer; font-size:12.5px; padding:0; white-space:nowrap;
+}
+#mh-root .mh-photo-modal img { display:block; max-height:70vh; object-fit:contain; margin:0 auto; }
 #mh-root .mh-note-banner {
   background: #F1DFB4; color: #6B4E1B; border-radius: 10px; padding: 9px 12px;
   font-size: 12px; margin-bottom: 14px; display:flex; gap:8px; align-items:flex-start;
@@ -279,6 +383,20 @@
 #mh-root .mh-onboard-icon { font-size: 34px; margin-bottom: 8px; }
 #mh-root .mh-onboard-title { font-family:'Tiro Bangla',serif; font-size: 20px; color: var(--gold); margin-bottom: 6px; }
 #mh-root .mh-onboard-sub { font-size: 12.5px; color: #D8CFB8; max-width: 320px; margin: 0 auto; line-height:1.6; }
+#mh-root .mh-welcome { padding: 40px 20px; max-width: 380px; margin: 0 auto; text-align:center; }
+#mh-root .mh-welcome-emoji { font-size: 44px; margin-bottom: 10px; }
+#mh-root .mh-welcome-title { font-family:'Tiro Bangla',serif; font-size: 24px; color: var(--ink); margin-bottom: 8px; }
+#mh-root .mh-welcome-desc { font-size: 13px; color: var(--ink-soft); line-height:1.6; margin-bottom: 6px; }
+#mh-root .mh-welcome-recent-title { font-size: 12px; color: var(--ink-soft); font-weight:600; margin: 26px 0 8px; text-align:left; }
+#mh-root .mh-welcome-recent-item {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 8px; text-align:left; font-size:13.5px; font-weight:600;
+  cursor: pointer;
+}
+#mh-root .mh-welcome-recent-right { display:flex; align-items:center; gap:10px; }
+#mh-root .mh-welcome-recent-code { font-family:'Roboto Mono',monospace; font-size:11px; color: var(--ink-soft); letter-spacing:1px; }
+#mh-root .mh-welcome-recent-x { color: var(--rust); font-size:13px; cursor:pointer; padding:2px 4px; }
 #mh-root .mh-chip-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 #mh-root .mh-chip-item {
   display:inline-flex; align-items:center; gap:6px; background: var(--green-soft); color: var(--green);
@@ -292,10 +410,12 @@
 /* settings: theme / language segmented toggles */
 #mh-root .mh-seg { display:flex; gap:8px; }
 #mh-root .mh-seg button {
-  flex:1; padding:10px; border-radius:9px; border:1px solid var(--rule); background:var(--card);
+  flex:1; padding:10px; border-radius:10px; border:1px solid var(--rule); background:var(--card);
   color:var(--ink-soft); font-weight:700; font-size:13px; cursor:pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
-#mh-root .mh-seg button.active { background: var(--cover); color: var(--gold); border-color: var(--cover); }
+#mh-root .mh-seg button.active { background: var(--cover); color: var(--gold); border-color: var(--cover); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+#mh-root .mh-seg button:active { transform: translateY(1px); }
 #mh-root .mh-history-row { display:flex; justify-content:space-between; font-size:12px; padding:7px 0; border-bottom:1px dashed var(--rule); }
 #mh-root .mh-history-row:last-child { border-bottom:none; }
 #mh-root .mh-history-row .mh-h-name { font-weight:700; }
@@ -310,10 +430,21 @@
 .mh-print-report th, .mh-print-report td { border:1px solid #999; padding:5px 7px; text-align:left; }
 .mh-print-report th { background:#eee; }
 .mh-print-report .mh-print-section-title { font-family:'Tiro Bangla',serif; font-size:14px; margin:16px 0 6px; }
+.mh-print-report .mh-print-signature-row { display:flex; justify-content:flex-end; margin-top:56px; }
+.mh-print-report .mh-print-signature-box { width:220px; text-align:center; }
+.mh-print-report .mh-print-signature-line { border-top:1px solid #333; margin-bottom:6px; }
+.mh-print-report .mh-print-signature-label { font-size:12px; color:#333; }
+.mh-print-report .mh-print-meal-title { font-family:'Tiro Bangla',serif; font-size:15px; margin:0 0 10px; }
+.mh-print-report table.mh-print-meal-table { font-size:8px; margin-bottom:0; }
+.mh-print-report table.mh-print-meal-table th, .mh-print-report table.mh-print-meal-table td { padding:2px 3px; text-align:center; }
+.mh-print-report table.mh-print-meal-table th:first-child, .mh-print-report table.mh-print-meal-table td:first-child { text-align:left; }
+.mh-print-report table.mh-print-meal-table tfoot td { font-weight:700; background:#f3f3f3; }
+#mh-root .mh-thumb { width:34px; height:34px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid var(--rule); }
 @media print {
-  body * { visibility: hidden !important; }
-  #mh-print-report, #mh-print-report * { visibility: visible !important; }
-  #mh-print-report { position:absolute; left:0; top:0; width:100%; display:block !important; }
+  body > *:not(#mh-print-report) { display: none !important; }
+  #mh-print-report { display: block !important; margin:0; }
+  .mh-print-meal-page { page-break-before: always; }
+  .mh-print-meal-page table { page-break-inside: avoid; }
 }
 
 @media (max-width: 380px) {
@@ -330,6 +461,10 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ---------------- LOCAL STORAGE POLYFILL ----------------
    এই অ্যাপটি মূলত Claude.ai-এর window.storage API এর জন্য বানানো হয়েছিল,
@@ -389,10 +524,29 @@ if(!window.storage){
 var T = {
   bn: {
     app: { defaultName: 'মেস হিসাব খাতা', subtitle: 'সবার খাবার ও খরচের হিসাব, একসাথে' },
+    welcome: {
+      title: 'মেস হিসাব খাতা', desc: 'সবার খাবার ও খরচের হিসাব, একসাথে ও লাইভ',
+      createBtn: '➕ নতুন মেস তৈরি করুন', joinBtn: '🔑 কোড দিয়ে যোগ দিন',
+      joinTitle: 'মেসের কোড দিন', joinDesc: 'যিনি মেস তৈরি করেছেন তার থেকে ৬ অক্ষরের কোড অথবা লিংক নিন',
+      joinCodeLabel: 'মেস কোড', joinCodePlaceholder: 'যেমন: AB12CD', joinCodeBtn: 'যোগ দিন', backBtn: 'ফিরে যান',
+      codeNotFound: 'এই কোডে কোনো মেস পাওয়া যায়নি, আবার চেক করুন', creatingMsg: 'নতুন মেস তৈরি হচ্ছে...',
+      noFirebase: 'ডেটাবেজ সংযোগ পাওয়া যায়নি, ইন্টারনেট চেক করুন অথবা পেজ রিলোড করুন', recentTitle: 'সাম্প্রতিক মেস'
+    },
     lock: { on: '🔓 অ্যাডমিন', view: '🔒 ভিউ মোড' },
     manager: { label: 'এই মাসের ম্যানেজার', none: 'ম্যানেজার নির্ধারিত হয়নি' },
-    tabs: { dashboard:'খাতা সারাংশ', meals:'মিল এন্ট্রি', bazar:'বাজার', expenses:'অন্যান্য খরচ', deposits:'জমা', members:'সদস্য', settings:'সেটিংস' },
-    sync: { loading:'সিঙ্ক হচ্ছে...', justNow:'এইমাত্র আপডেট হয়েছে', agoSuffix:' সেকেন্ড আগে সিঙ্ক হয়েছে' },
+    tabs: { dashboard:'খাতা সারাংশ', meals:'মিল এন্ট্রি', bazar:'বাজার', expenses:'অন্যান্য খরচ', deposits:'জমা', members:'সদস্য', settings:'সেটিংস', log:'কার্যকলাপ' },
+    sync: { loading:'সিঙ্ক হচ্ছে...', justNow:'এইমাত্র আপডেট হয়েছে', agoSuffix:' সেকেন্ড আগে সিঙ্ক হয়েছে', minAgoSuffix:' মিনিট আগে সিঙ্ক হয়েছে', hourAgoSuffix:' ঘণ্টা আগে সিঙ্ক হয়েছে' },
+    common: { editBtn:'✏️ এডিট', saveBtn:'সংরক্ষণ করুন', cancelBtn:'বাতিল', editEntryTitle:'এন্ট্রি এডিট করুন', editMemberTitle:'সদস্যের নাম এডিট করুন', updated:'হালনাগাদ হয়েছে', undoBtn:'আনডু', photoLabel:'রিসিটের ছবি (ঐচ্ছিক)', removePhoto:'ছবি সরান', photoTooBig:'ছবির কারণে সংরক্ষণ ব্যর্থ হয়েছে, ছোট ছবি ব্যবহার করুন', shareBtn:'📤 শেয়ার করুন', shareFallback:'রিপোর্ট কপি হয়েছে, যেকোনো জায়গায় পেস্ট করুন' },
+    log: {
+      title:'কার্যকলাপের লগ', empty:'এখনও কোনো কার্যকলাপ নেই',
+      bazar_add:'বাজার যোগ হয়েছে', bazar_edit:'বাজার এডিট হয়েছে', bazar_delete:'বাজার মুছে ফেলা হয়েছে',
+      expense_add:'খরচ যোগ হয়েছে', expense_edit:'খরচ এডিট হয়েছে', expense_delete:'খরচ মুছে ফেলা হয়েছে',
+      deposit_add:'জমা যোগ হয়েছে', deposit_edit:'জমা এডিট হয়েছে', deposit_delete:'জমা মুছে ফেলা হয়েছে',
+      member_add:'সদস্য যোগ হয়েছে', member_edit:'সদস্যের নাম এডিট হয়েছে', member_archive:'সদস্য বাদ দেওয়া হয়েছে', member_reactivate:'সদস্য পুনরায় যোগ হয়েছে',
+      user_joined:'অ্যাপে জয়েন করেছেন', user_updated:'নিজের তথ্য আপডেট করেছেন', user_removed:'জয়েনের তালিকা থেকে বাদ দেওয়া হয়েছে', pin_change:'পাসওয়ার্ড পরিবর্তন হয়েছে',
+      unknownAdmin:'অ্যাডমিন', unknownUser:'অজানা ব্যবহারকারী',
+      mess_name:'মেসের নাম পরিবর্তন হয়েছে', admin_change:'অ্যাডমিন/ম্যানেজার পরিবর্তন হয়েছে', backup_restore:'ব্যাকআপ থেকে পুনরুদ্ধার হয়েছে'
+    },
     dashboard: {
       viewBanner:'👀 আপনি ভিউ মোডে আছেন। অ্যাডমিন আপডেট করলে এখানে সাথে সাথে দেখতে পাবেন।',
       fundLabel:'তহবিলে অবশিষ্ট', fundSub:'মোট জমা − (বাজার + ভাড়া/বিল/অন্যান্য খরচ)',
@@ -401,12 +555,15 @@ var T = {
       credit:'জমা আছে', due:'বাকি আছে', archivedBadge:'সাবেক সদস্য', mealsWord:'মিল', totalCostWord:'মোট খরচ',
       breakdownFood:'খাবার', breakdownOther:'অন্যান্য'
     },
-    meals: { title:'দৈনিক মিল এন্ট্রি', viewBanner:'👀 শুধু অ্যাডমিন মিল সংখ্যা পরিবর্তন করতে পারবেন।', date:'তারিখ', total:'মোট', totalMeals:'মোট মিল', archivedNote:'* সাবেক সদস্য — শুধু এই মাসের আগের হিসাব দেখানো হচ্ছে' },
+    meals: { title:'দৈনিক মিল এন্ট্রি', viewBanner:'👀 শুধু অ্যাডমিন মিল সংখ্যা পরিবর্তন করতে পারবেন।', date:'তারিখ', total:'মোট', totalMeals:'মোট মিল', archivedNote:'* সাবেক সদস্য — শুধু এই মাসের আগের হিসাব দেখানো হচ্ছে',
+      viewEntryTab:'✍️ মিল দিন', viewChartTab:'📋 চার্ট দেখুন', entryDayTotal:'ওইদিনের মোট মিল', entryNoMembers:'এই তারিখে কোনো সক্রিয় সদস্য নেই', entryOutsideMonth:'* এই তারিখটি বর্তমানে খোলা মাসের বাইরে, তবু এন্ট্রি সংরক্ষণ হবে' },
     bazar: { title:'বাজার খরচ', totalLabel:'মোট', buyerLabel:'কে বাজার করেছে', itemLabel:'কী কেনা হয়েছে', itemPlaceholder:'যেমনঃ চাল, তেল, সবজি', amountLabel:'টাকার পরিমাণ', addBtn:'+ বাজার যোগ করুন', empty:'এই মাসে এখনও কোনো বাজার যোগ করা হয়নি', unknown:'অজানা' },
     expenses: { title:'বাসা ভাড়া, বিল ও অন্যান্য খরচ', infoBanner1:'ℹ️ এই খরচগুলো মিলের সংখ্যা দিয়ে নয়, সক্রিয় সদস্য সংখ্যা দিয়ে (মাথাপিছু) সমান ভাগে ভাগ হবে। এই মাসে মাথাপিছু ভাগ ', infoBanner2:' (' , infoBanner3: ' জন সদস্য)।', categoryLabel:'খরচের ধরন', noteLabel:'বিবরণ (ঐচ্ছিক)', notePlaceholder:'যেমনঃ জুলাই মাসের ভাড়া', amountLabel:'টাকার পরিমাণ', addBtn:'+ খরচ যোগ করুন', empty:'এই মাসে এখনও কোনো অন্যান্য খরচ যোগ করা হয়নি' },
     categories: { rent:'বাসা ভাড়া', electricity:'বিদ্যুৎ বিল', water:'পানি/গ্যাস বিল', other:'অন্যান্য খরচ' },
     deposits: { title:'জমা', totalLabel:'মোট', memberLabel:'সদস্য', dateLabel:'তারিখ', amountLabel:'জমার পরিমাণ', noteLabel:'নোট (ঐচ্ছিক)', notePlaceholder:'যেমনঃ ক্যাশে দেওয়া', addBtn:'+ জমা যোগ করুন', empty:'এই মাসে এখনও কোনো জমা নেই' },
-    members: { title:'সদস্য', newMemberLabel:'নতুন সদস্যের নাম', newMemberPlaceholder:'নাম লিখুন', addBtn:'+ সদস্য যোগ করুন', activeSection:'সক্রিয় সদস্য', personSuffix:' জন', empty:'এখনও কোনো সদস্য নেই', archivedSection:'সাবেক সদস্য', archivedEyebrow:'আগের হিসাব সংরক্ষিত আছে', reactivateBtn:'পুনরায় যোগ করুন', archiveNote:'সাবেক সদস্যদের আগের মাসের মিল, বাজার ও জমার হিসাব খাতায় ঠিক থাকবে। শুধু নতুন এন্ট্রির তালিকা থেকে তারা বাদ পড়েছেন।', archiveConfirm:'-কে সক্রিয় তালিকা থেকে বাদ দিতে চান? আগের সব হিসাব (মিল, বাজার, জমা) খাতায় ঠিক থাকবে, শুধু নতুন এন্ট্রির তালিকা থেকে বাদ পড়বেন।' },
+    members: { title:'সদস্য', newMemberLabel:'নতুন সদস্যের নাম', newMemberPlaceholder:'নাম লিখুন', newMemberPhoneLabel:'ফোন নম্বর', newMemberPhonePlaceholder:'01xxxxxxxxx', newMemberPasswordLabel:'পাসওয়ার্ড (লগইনের জন্য)', newMemberPasswordPlaceholder:'একটা পাসওয়ার্ড দিন', addBtn:'+ সদস্য যোগ করুন', activeSection:'সক্রিয় সদস্য', personSuffix:' জন', empty:'এখনও কোনো সদস্য নেই', archivedSection:'সাবেক সদস্য', archivedEyebrow:'আগের হিসাব সংরক্ষিত আছে', reactivateBtn:'পুনরায় যোগ করুন', archiveNote:'সাবেক সদস্যদের আগের মাসের মিল, বাজার ও জমার হিসাব খাতায় ঠিক থাকবে। শুধু নতুন এন্ট্রির তালিকা থেকে তারা বাদ পড়েছেন।', archiveConfirm:'-কে সক্রিয় তালিকা থেকে বাদ দিতে চান? আগের সব হিসাব (মিল, বাজার, জমা) খাতায় ঠিক থাকবে, শুধু নতুন এন্ট্রির তালিকা থেকে বাদ পড়বেন।' },
+    login: { title:'লগইন করুন', desc:'আপনার ফোন নম্বর ও পাসওয়ার্ড দিন। এটি অ্যাডমিন সদস্য যোগ করার সময় সেট করে দিয়েছেন।', descMandatory:'বাইরের কেউ যাতে এই মেসে ঢুকতে না পারে, তাই আগে আপনার ফোন নম্বর ও পাসওয়ার্ড দিয়ে লগইন করুন। এটি ছাড়া এগিয়ে যাওয়া যাবে না। পাসওয়ার্ড না জানা থাকলে মেসের অ্যাডমিনকে জিজ্ঞাসা করুন।', phoneLabel:'ফোন নম্বর', phonePlaceholder:'01xxxxxxxxx', passwordLabel:'পাসওয়ার্ড', passwordPlaceholder:'পাসওয়ার্ড লিখুন', loginBtn:'লগইন করুন', needBoth:'ফোন নম্বর ও পাসওয়ার্ড দুটোই দিন', wrongCreds:'ফোন নম্বর বা পাসওয়ার্ড ভুল', welcomeSuffix:' — স্বাগতম!', youChip:'আপনি', adminPinLink:'আমি অ্যাডমিন, PIN দিয়ে ঢুকব' },
+    profile: { title:'আপনার প্রোফাইল এডিট করুন', settingsTitle:'আপনার প্রোফাইল', settingsDesc:'লগইন করা নেই।', editBtn:'✏️ প্রোফাইল এডিট করুন', logoutBtn:'🔓 লগ-আউট করুন' },
     settings: {
       title:'সেটিংস', messNameLabel:'মেসের নাম', saveBtn:'সংরক্ষণ',
       themeTitle:'থিম', themeLight:'☀️ লাইট', themeDark:'🌙 ডার্ক',
@@ -414,7 +571,11 @@ var T = {
       adminTitle:'অ্যাডমিন ও ম্যানেজার', currentManager:'বর্তমান ম্যানেজার',
       changeManagerBtn:'🔁 নতুন ম্যানেজার সেট করুন', historyTitle:'ম্যানেজার ইতিহাস', noHistory:'এখনও কোনো পরিবর্তন হয়নি',
       loginBtn:'🔒 অ্যাডমিন হিসেবে প্রবেশ করুন', logoutBtn:'ভিউ মোডে ফিরে যান',
-      reportTitle:'মাসিক রিপোর্ট', reportDesc:'উপরে যে মাস নির্বাচন করা আছে, সেই মাসের রিপোর্ট তৈরি হবে।', printBtn:'🖨️ এই মাসের রিপোর্ট প্রিন্ট করুন',
+      reportTitle:'মাসিক রিপোর্ট', reportDesc:'উপরে যে মাস নির্বাচন করা আছে, সেই মাসের রিপোর্ট তৈরি হবে।', printBtn:'🖨️ এই মাসের রিপোর্ট প্রিন্ট করুন', pdfBtn:'📄 PDF ডাউনলোড করুন', pdfGenerating:'⏳ PDF তৈরি হচ্ছে...', pdfError:'PDF তৈরি করা যায়নি, আবার চেষ্টা করুন।',
+      linkTitle:'মেসের লিংক শেয়ার করুন', linkDesc:'এই লিংক যার কাছে থাকবে সে-ই এই মেসের হিসাব লাইভ দেখতে পারবে।', linkCodeLabel:'মেস কোড', copyLinkBtn:'🔗 লিংক কপি করুন', linkCopied:'লিংক কপি হয়েছে',
+      logoutTitle:'অন্য কিছু', logoutBtn:'🚪 এই মেস থেকে বের হয়ে যান', logoutDesc:'এই ডিভাইস থেকে বের হয়ে গেলে নতুন মেস তৈরি বা অন্য কোনো মেসে কোড দিয়ে যোগ দিতে পারবেন। এই মেসের লিংক/কোড থাকলে আবার ফিরেও আসতে পারবেন।', logoutConfirm:'আপনি কি এই মেস থেকে বের হয়ে যেতে চান?',
+      reminderTitle:'মিল এন্ট্রি রিমাইন্ডার', reminderDesc:'প্রতিদিন নির্দিষ্ট সময়ে মিল এন্ট্রি দেওয়ার মনে করিয়ে দেবে। এই রিমাইন্ডার শুধু এই ব্রাউজারে এবং এই পেজ/ট্যাব খোলা থাকা অবস্থায়ই কাজ করবে, ব্রাউজার বন্ধ থাকলে নোটিফিকেশন আসবে না।',
+      reminderEnable:'রিমাইন্ডার চালু করুন', reminderTimeLabel:'সময়', reminderOnToast:'রিমাইন্ডার চালু হয়েছে', reminderOffToast:'রিমাইন্ডার বন্ধ হয়েছে', reminderPermissionDenied:'নোটিফিকেশন অনুমতি দেওয়া হয়নি, ব্রাউজার সেটিংস থেকে অনুমতি দিন', reminderNotifTitle:'মেস হিসাব', reminderNotifBody:'আজকের মিল এন্ট্রি দেওয়া হয়েছে কি? এখনই দিয়ে দিন।',
       backupTitle:'ডেটা ব্যাকআপ ও স্থানান্তর', backupDesc:'পুরো খাতা (সদস্য, মিল, বাজার, খরচ, জমা) একটি ফাইলে সংরক্ষণ করুন, অথবা আগের কোনো ব্যাকআপ ফিরিয়ে আনুন।',
       downloadBtn:'⬇️ ডেটা ডাউনলোড করুন (JSON)', copyBtn:'📋 ডেটা কপি করুন', uploadFileLabel:'ব্যাকআপ ফাইল থেকে আপলোড করুন', or:'অথবা',
       pasteLabel:'ব্যাকআপ JSON এখানে পেস্ট করুন', uploadBtn:'⬆️ পেস্ট করা ডেটা আপলোড করুন',
@@ -432,15 +593,19 @@ var T = {
     },
     admin: {
       onTitle:'অ্যাডমিন মোড চালু আছে', onDesc:'আপনি এখন সব তথ্য যোগ ও পরিবর্তন করতে পারবেন। সবাই লাইভ আপডেট দেখতে পাবে।',
-      changeBtn:'🔁 নতুন মেস ম্যানেজার সেট করুন', logoutBtn:'ভিউ মোডে ফিরে যান', closeBtn:'বন্ধ করুন',
+      changeBtn:'🔁 নতুন মেস ম্যানেজার সেট করুন', changePinOnlyBtn:'🔑 পাসওয়ার্ড পরিবর্তন করুন', logoutBtn:'ভিউ মোডে ফিরে যান', closeBtn:'বন্ধ করুন',
       firstSetupTitle:'প্রথমবার সেটআপ', firstSetupDesc:'এই খাতার জন্য একটি অ্যাডমিন পিন তৈরি করুন। এই পিন দিয়ে ভবিষ্যতে যে কেউ অ্যাডমিন হয়ে তথ্য আপডেট করতে পারবে।',
       newPinLabel:'নতুন পিন (৪ সংখ্যা বা তার বেশি)', setPinBtn:'পিন সেট করুন ও অ্যাডমিন হন', cancelBtn:'বাতিল',
       enterPinTitle:'অ্যাডমিন পিন দিন', enterPinDesc:'তথ্য যোগ বা পরিবর্তন করতে অ্যাডমিন পিন দিন। পিন না জানলে শুধু দেখতে পারবেন।',
       pinLabel:'পিন', pinPlaceholder:'পিন লিখুন', enterBtn:'প্রবেশ করুন', wrongPin:'পিন সঠিক নয়',
       changeTitle:'নতুন অ্যাডমিন / ম্যানেজার', changeDesc:'নতুন মাসের মেস ম্যানেজার বাছাই করুন এবং একটি নতুন পিন সেট করুন। সেট করার সাথে সাথে পুরনো পিন আর কাজ করবে না, এবং সব ডিভাইস ভিউ মোডে চলে যাবে যতক্ষণ না কেউ নতুন পিন দিয়ে প্রবেশ করে।',
+      changePinOnlyTitle:'পাসওয়ার্ড পরিবর্তন করুন', changePinOnlyDesc:'ম্যানেজার একই থাকবে, শুধু নতুন পিন সেট হবে। সেট করার সাথে সাথে পুরনো পিন আর কাজ করবে না।',
       chooseManagerLabel:'নতুন ম্যানেজার বাছাই করুন', newPinLabel2:'নতুন অ্যাডমিন পিন (৪ সংখ্যা বা তার বেশি)', setBtn:'নতুন পিন সেট করুন', backBtn:'ফিরে যান',
       changedToast:'নতুন অ্যাডমিন পিন চালু হয়েছে', onToast:'অ্যাডমিন মোড চালু হয়েছে', offToast:'ভিউ মোডে ফেরত এসেছেন',
-      changedElsewhere:'অ্যাডমিন পরিবর্তন হয়েছে, আপনি এখন ভিউ মোডে আছেন', problemToast:'সমস্যা হয়েছে, আবার চেষ্টা করুন', needManagerToast:'একজন ম্যানেজার বাছাই করুন', noActiveMembers:'আগে অন্তত একজন সক্রিয় সদস্য যোগ করুন'
+      changedElsewhere:'অ্যাডমিন পরিবর্তন হয়েছে, আপনি এখন ভিউ মোডে আছেন', problemToast:'সমস্যা হয়েছে, আবার চেষ্টা করুন', needManagerToast:'একজন ম্যানেজার বাছাই করুন', noActiveMembers:'আগে অন্তত একজন সক্রিয় সদস্য যোগ করুন', confirmPhoneLabel:'নিশ্চিতকরণে তার ফোন নম্বর দিন', confirmPhoneNote:'নির্বাচিত সদস্যের সঠিক ফোন নম্বর দিলেই অ্যাডমিন করা যাবে — যাতে অন্য কেউ ভুলভাবে অ্যাডমিন হতে না পারে।', managerNeedsPhone:'আগে এই সদস্যের ফোন নম্বর যোগ করুন (সদস্য এডিট থেকে)', phoneMismatch:'ফোন নম্বর মিলছে না',
+      forgotPinLink:'পিন ভুলে গেছেন?', resetTitle:'পিন রিসেট করুন', resetWarn:'⚠️ পিন রিসেট করলে বর্তমান পিন আর কাজ করবে না এবং যে-ই নতুন পিন বসাবে সে-ই অ্যাডমিন হয়ে যাবে। শুধু প্রকৃত মেস সদস্য হলে তবেই এটি করুন।',
+      resetNameLabel:'নিশ্চিত করতে মেসের নাম হুবহু লিখুন', resetNamePlaceholder:'মেসের নাম লিখুন', resetNewPinLabel:'নতুন পিন (৪ সংখ্যা বা তার বেশি)',
+      resetConfirmBtn:'পিন রিসেট করে নতুন পিন সেট করুন', resetNameMismatch:'মেসের নাম মিলছে না', resetDoneToast:'পিন রিসেট হয়েছে, আপনি এখন অ্যাডমিন'
     },
     toast: {
       saveFailed:'সংরক্ষণ ব্যর্থ হয়েছে, আবার চেষ্টা করুন', deleted:'মুছে ফেলা হয়েছে', bazarAdded:'বাজার যোগ হয়েছে', expenseAdded:'খরচ যোগ হয়েছে', depositAdded:'জমা যোগ হয়েছে',
@@ -451,14 +616,33 @@ var T = {
       invalidJson:'এটি সঠিক JSON ফাইল নয়', invalidBackup:'এই ফাইলের গঠন মিলছে না, সঠিক ব্যাকআপ ফাইল দিন', fileReadFailed:'ফাইল পড়া যায়নি', pasteFirst:'আগে JSON পেস্ট করুন', restored:'ব্যাকআপ থেকে ডেটা বসানো হয়েছে'
     },
     importConfirm: { title:'নিশ্চিত করুন', membersWord:' জন সদস্য, ', bazarWord:' টি বাজার এন্ট্রি এবং ', depositsWord:' টি জমা এন্ট্রি আছে। এটি আপলোড করলে ', boldWarn:'বর্তমান সব তথ্য মুছে গিয়ে', afterBold:' এই ব্যাকআপ দিয়ে প্রতিস্থাপিত হবে। সবাই এই পরিবর্তন লাইভ দেখতে পাবে।', confirmBtn:'হ্যাঁ, প্রতিস্থাপন করুন', cancelBtn:'বাতিল', hasPrefix:'এই ব্যাকআপে ' },
-    print: { title:'মাসিক রিপোর্ট', generated:'তৈরি হয়েছে', manager:'ম্যানেজার', memberCol:'সদস্য', mealsCol:'মিল', mealCostCol:'খাবার খরচ', sharedCostCol:'ভাগের খরচ', totalCostCol:'মোট খরচ', depositCol:'জমা', balanceCol:'ব্যালেন্স', totalsRow:'সর্বমোট', bazarSectionTitle:'বাজার এন্ট্রি', expenseSectionTitle:'অন্যান্য খরচ', dateCol:'তারিখ', itemCol:'বিবরণ', amountCol:'পরিমাণ', noEntries:'কোনো এন্ট্রি নেই' }
+    print: { title:'মাসিক রিপোর্ট', generated:'তৈরি হয়েছে', manager:'ম্যানেজার', memberCol:'সদস্য', mealsCol:'মিল', mealCostCol:'খাবার খরচ', sharedCostCol:'ভাগের খরচ', totalCostCol:'মোট খরচ', depositCol:'জমা', balanceCol:'ব্যালেন্স', totalsRow:'সর্বমোট', bazarSectionTitle:'বাজার এন্ট্রি', expenseSectionTitle:'অন্যান্য খরচ', dateCol:'তারিখ', itemCol:'বিবরণ', amountCol:'পরিমাণ', noEntries:'কোনো এন্ট্রি নেই', signatureManager:'ম্যানেজারের স্বাক্ষর', signatureDate:'তারিখ', mealChartTitle:'দৈনিক মিল চার্ট' }
   },
   en: {
     app: { defaultName: 'Mess Accounts Ledger', subtitle: 'Shared meal and expense accounts, together' },
+    welcome: {
+      title: 'Mess Accounts Ledger', desc: 'Shared meal and expense accounts, together and live',
+      createBtn: '➕ Create a new mess', joinBtn: '🔑 Join with a code',
+      joinTitle: 'Enter the mess code', joinDesc: 'Get the 6-character code or link from whoever created the mess',
+      joinCodeLabel: 'Mess code', joinCodePlaceholder: 'e.g. AB12CD', joinCodeBtn: 'Join', backBtn: 'Back',
+      codeNotFound: 'No mess found with this code, please check again', creatingMsg: 'Creating your new mess...',
+      noFirebase: 'Could not reach the database, check your internet or reload the page', recentTitle: 'Recent messes'
+    },
     lock: { on: '🔓 Admin', view: '🔒 View mode' },
     manager: { label: 'Manager this month', none: 'No manager set yet' },
-    tabs: { dashboard:'Summary', meals:'Meals', bazar:'Groceries', expenses:'Other bills', deposits:'Deposits', members:'Members', settings:'Settings' },
-    sync: { loading:'Syncing...', justNow:'Updated just now', agoSuffix:' seconds ago' },
+    tabs: { dashboard:'Summary', meals:'Meals', bazar:'Groceries', expenses:'Other bills', deposits:'Deposits', members:'Members', settings:'Settings', log:'Activity' },
+    sync: { loading:'Syncing...', justNow:'Updated just now', agoSuffix:' seconds ago', minAgoSuffix:' min ago', hourAgoSuffix:' hr ago' },
+    common: { editBtn:'✏️ Edit', saveBtn:'Save', cancelBtn:'Cancel', editEntryTitle:'Edit entry', editMemberTitle:'Edit member name', updated:'Updated', undoBtn:'Undo', photoLabel:'Receipt photo (optional)', removePhoto:'Remove photo', photoTooBig:'Save failed because of the photo, please use a smaller image', shareBtn:'📤 Share', shareFallback:'Report copied, paste it anywhere' },
+    log: {
+      title:'Activity log', empty:'No activity yet',
+      bazar_add:'Grocery entry added', bazar_edit:'Grocery entry edited', bazar_delete:'Grocery entry deleted',
+      expense_add:'Expense added', expense_edit:'Expense edited', expense_delete:'Expense deleted',
+      deposit_add:'Deposit added', deposit_edit:'Deposit edited', deposit_delete:'Deposit deleted',
+      member_add:'Member added', member_edit:'Member name edited', member_archive:'Member removed', member_reactivate:'Member reactivated',
+      user_joined:'Joined the app', user_updated:'Updated their info', user_removed:'Removed from joined list', pin_change:'Password changed',
+      unknownAdmin:'Admin', unknownUser:'Unknown user',
+      mess_name:'Mess name changed', admin_change:'Admin/manager changed', backup_restore:'Restored from backup'
+    },
     dashboard: {
       viewBanner:'👀 You are in view mode. Admin updates will appear here live.',
       fundLabel:'Remaining in fund', fundSub:'Total deposits minus (groceries + rent/bills/other)',
@@ -467,12 +651,15 @@ var T = {
       credit:'In credit', due:'Owes', archivedBadge:'Former member', mealsWord:'meals', totalCostWord:'Total cost',
       breakdownFood:'Food', breakdownOther:'Other'
     },
-    meals: { title:'Daily meal entry', viewBanner:'👀 Only the admin can change meal counts.', date:'Date', total:'Total', totalMeals:'Total meals', archivedNote:'* Former member — showing only this months earlier record' },
+    meals: { title:'Daily meal entry', viewBanner:'👀 Only the admin can change meal counts.', date:'Date', total:'Total', totalMeals:'Total meals', archivedNote:'* Former member — showing only this months earlier record',
+      viewEntryTab:'✍️ Enter meals', viewChartTab:'📋 View chart', entryDayTotal:'Total meals that day', entryNoMembers:'No active members for this date', entryOutsideMonth:'* This date is outside the month currently open, but the entry will still be saved' },
     bazar: { title:'Grocery expenses', totalLabel:'Total', buyerLabel:'Bought by', itemLabel:'What was bought', itemPlaceholder:'e.g. rice, oil, vegetables', amountLabel:'Amount', addBtn:'+ Add grocery entry', empty:'No grocery entries yet this month', unknown:'Unknown' },
     expenses: { title:'Rent, bills and other expenses', infoBanner1:'ℹ️ These costs split equally per active member (per head), not by meal count. This months per-head share is ', infoBanner2:' (', infoBanner3: ' members).', categoryLabel:'Expense type', noteLabel:'Note (optional)', notePlaceholder:'e.g. July rent', amountLabel:'Amount', addBtn:'+ Add expense', empty:'No other expenses added yet this month' },
     categories: { rent:'Rent', electricity:'Electricity bill', water:'Water/gas bill', other:'Other expense' },
     deposits: { title:'Deposits', totalLabel:'Total', memberLabel:'Member', dateLabel:'Date', amountLabel:'Deposit amount', noteLabel:'Note (optional)', notePlaceholder:'e.g. paid in cash', addBtn:'+ Add deposit', empty:'No deposits yet this month' },
-    members: { title:'Members', newMemberLabel:'New member name', newMemberPlaceholder:'Enter a name', addBtn:'+ Add member', activeSection:'Active members', personSuffix:'', empty:'No members yet', archivedSection:'Former members', archivedEyebrow:'Old records are preserved', reactivateBtn:'Reactivate', archiveNote:'A former members earlier meal, grocery and deposit records stay in the ledger. They are just left out of new entry lists.', archiveConfirm:': remove from the active list? All earlier records (meals, groceries, deposits) stay in the ledger, they will just be left out of new entries.' },
+    members: { title:'Members', newMemberLabel:'New member name', newMemberPlaceholder:'Enter a name', newMemberPhoneLabel:'Phone number', newMemberPhonePlaceholder:'01xxxxxxxxx', newMemberPasswordLabel:'Password (for login)', newMemberPasswordPlaceholder:'Set a password', addBtn:'+ Add member', activeSection:'Active members', personSuffix:'', empty:'No members yet', archivedSection:'Former members', archivedEyebrow:'Old records are preserved', reactivateBtn:'Reactivate', archiveNote:'A former members earlier meal, grocery and deposit records stay in the ledger. They are just left out of new entry lists.', archiveConfirm:': remove from the active list? All earlier records (meals, groceries, deposits) stay in the ledger, they will just be left out of new entries.' },
+    login: { title:'Log in', desc:'Enter your phone number and password. The admin set this when adding you as a member.', descMandatory:'To keep outsiders from getting into this mess, please log in with your phone number and password first. You cannot continue without this. If you do not know your password, ask the mess admin.', phoneLabel:'Phone number', phonePlaceholder:'01xxxxxxxxx', passwordLabel:'Password', passwordPlaceholder:'Enter password', loginBtn:'Log in', needBoth:'Enter both phone number and password', wrongCreds:'Incorrect phone number or password', welcomeSuffix:' — welcome!', youChip:'You', adminPinLink:'I am the admin, let me use the PIN' },
+    profile: { title:'Edit your profile', settingsTitle:'Your profile', settingsDesc:'Not logged in.', editBtn:'✏️ Edit profile', logoutBtn:'🔓 Log out' },
     settings: {
       title:'Settings', messNameLabel:'Mess name', saveBtn:'Save',
       themeTitle:'Theme', themeLight:'☀️ Light', themeDark:'🌙 Dark',
@@ -480,7 +667,11 @@ var T = {
       adminTitle:'Admin & manager', currentManager:'Current manager',
       changeManagerBtn:'🔁 Set new manager', historyTitle:'Manager history', noHistory:'No changes yet',
       loginBtn:'🔒 Log in as admin', logoutBtn:'Back to view mode',
-      reportTitle:'Monthly report', reportDesc:'The report is generated for the month selected above.', printBtn:'🖨️ Print this months report',
+      reportTitle:'Monthly report', reportDesc:'The report is generated for the month selected above.', printBtn:'🖨️ Print this months report', pdfBtn:'📄 Download PDF', pdfGenerating:'⏳ Generating PDF...', pdfError:'Could not generate the PDF, please try again.',
+      linkTitle:'Share the mess link', linkDesc:'Anyone with this link can live-view this mess ledger.', linkCodeLabel:'Mess code', copyLinkBtn:'🔗 Copy link', linkCopied:'Link copied',
+      logoutTitle:'Other', logoutBtn:'🚪 Log out of this mess', logoutDesc:'Logging out on this device lets you create a new mess or join another with a code. You can always come back with this mess link/code.', logoutConfirm:'Are you sure you want to log out of this mess?',
+      reminderTitle:'Meal entry reminder', reminderDesc:'Reminds you every day at a set time to enter meals. This only works while this browser tab stays open; it will not notify you if the browser is closed.',
+      reminderEnable:'Turn on reminder', reminderTimeLabel:'Time', reminderOnToast:'Reminder turned on', reminderOffToast:'Reminder turned off', reminderPermissionDenied:'Notification permission was not granted, allow it from browser settings', reminderNotifTitle:'Mess Hishab', reminderNotifBody:'Have you entered today meals yet? Do it now.',
       backupTitle:'Data backup & transfer', backupDesc:'Save the whole ledger (members, meals, groceries, expenses, deposits) to a file, or restore an earlier backup.',
       downloadBtn:'⬇️ Download data (JSON)', copyBtn:'📋 Copy data', uploadFileLabel:'Upload from a backup file', or:'or',
       pasteLabel:'Paste backup JSON here', uploadBtn:'⬆️ Upload pasted data',
@@ -498,15 +689,19 @@ var T = {
     },
     admin: {
       onTitle:'Admin mode is on', onDesc:'You can now add and change all information. Everyone will see live updates.',
-      changeBtn:'🔁 Set new mess manager', logoutBtn:'Back to view mode', closeBtn:'Close',
+      changeBtn:'🔁 Set new mess manager', changePinOnlyBtn:'🔑 Change password', logoutBtn:'Back to view mode', closeBtn:'Close',
       firstSetupTitle:'First-time setup', firstSetupDesc:'Create an admin PIN for this ledger. Anyone with this PIN can become admin and update information later.',
       newPinLabel:'New PIN (4+ digits)', setPinBtn:'Set PIN and become admin', cancelBtn:'Cancel',
       enterPinTitle:'Enter admin PIN', enterPinDesc:'Enter the admin PIN to add or change information. Without it you can only view.',
       pinLabel:'PIN', pinPlaceholder:'Enter PIN', enterBtn:'Log in', wrongPin:'Incorrect PIN',
       changeTitle:'New admin / manager', changeDesc:'Choose the new months mess manager and set a new PIN. As soon as it is set, the old PIN stops working, and every device drops to view mode until someone logs in with the new PIN.',
+      changePinOnlyTitle:'Change password', changePinOnlyDesc:'The manager stays the same, only a new PIN is set. As soon as it is set, the old PIN stops working.',
       chooseManagerLabel:'Choose the new manager', newPinLabel2:'New admin PIN (4+ digits)', setBtn:'Set new PIN', backBtn:'Back',
       changedToast:'New admin PIN is active', onToast:'Admin mode is on', offToast:'Back to view mode',
-      changedElsewhere:'The admin changed, you are now in view mode', problemToast:'Something went wrong, try again', needManagerToast:'Choose a manager', noActiveMembers:'Add at least one active member first'
+      changedElsewhere:'The admin changed, you are now in view mode', problemToast:'Something went wrong, try again', needManagerToast:'Choose a manager', noActiveMembers:'Add at least one active member first', confirmPhoneLabel:'Enter their phone number to confirm', confirmPhoneNote:'Only the exact phone number on file for the selected member will work — so no one else can wrongly become admin.', managerNeedsPhone:'Add a phone number for this member first (via Edit member)', phoneMismatch:'Phone number does not match',
+      forgotPinLink:'Forgot PIN?', resetTitle:'Reset PIN', resetWarn:'⚠️ Resetting will disable the current PIN, and whoever sets the new one becomes admin. Only do this if you are actually a member of this mess.',
+      resetNameLabel:'Type the mess name exactly to confirm', resetNamePlaceholder:'Enter the mess name', resetNewPinLabel:'New PIN (4+ digits)',
+      resetConfirmBtn:'Reset PIN and set a new one', resetNameMismatch:'Mess name does not match', resetDoneToast:'PIN reset, you are now admin'
     },
     toast: {
       saveFailed:'Save failed, try again', deleted:'Deleted', bazarAdded:'Grocery entry added', expenseAdded:'Expense added', depositAdded:'Deposit added',
@@ -517,7 +712,7 @@ var T = {
       invalidJson:'This is not a valid JSON file', invalidBackup:'This file structure does not match, please give a valid backup file', fileReadFailed:'Could not read the file', pasteFirst:'Paste the JSON first', restored:'Data restored from backup'
     },
     importConfirm: { title:'Confirm', membersWord:' members, ', bazarWord:' grocery entries, and ', depositsWord:' deposit entries. Uploading will ', boldWarn:'erase all current data', afterBold:' and replace it with this backup. Everyone will see this change live.', confirmBtn:'Yes, replace it', cancelBtn:'Cancel', hasPrefix:'This backup has ' },
-    print: { title:'Monthly report', generated:'Generated', manager:'Manager', memberCol:'Member', mealsCol:'Meals', mealCostCol:'Meal cost', sharedCostCol:'Shared cost', totalCostCol:'Total cost', depositCol:'Deposit', balanceCol:'Balance', totalsRow:'Total', bazarSectionTitle:'Grocery entries', expenseSectionTitle:'Other expenses', dateCol:'Date', itemCol:'Details', amountCol:'Amount', noEntries:'No entries' }
+    print: { title:'Monthly report', generated:'Generated', manager:'Manager', memberCol:'Member', mealsCol:'Meals', mealCostCol:'Meal cost', sharedCostCol:'Shared cost', totalCostCol:'Total cost', depositCol:'Deposit', balanceCol:'Balance', totalsRow:'Total', bazarSectionTitle:'Grocery entries', expenseSectionTitle:'Other expenses', dateCol:'Date', itemCol:'Details', amountCol:'Amount', noEntries:'No entries', signatureManager:'Manager signature', signatureDate:'Date', mealChartTitle:'Daily meal chart' }
   }
 };
 function t(path){
@@ -543,6 +738,92 @@ var PIN_KEY = 'messhishab:pin';
 var LOCAL_ADMIN_KEY = 'messhishab:local-admin';
 var LANG_KEY = 'messhishab:lang';
 var THEME_KEY = 'messhishab:theme';
+var REMINDER_KEY = 'messhishab:reminder';
+var RECENT_KEY = 'messhishab:recent';
+
+/* ---------------- FIREBASE (shared, multi-mess backend) ---------------- */
+var firebaseConfig = {
+  apiKey: "AIzaSyBTZq0xF_wL57BLHfxuDFq3JTSHA1GPmiM",
+  authDomain: "mess-f5b4a.firebaseapp.com",
+  databaseURL: "https://mess-f5b4a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mess-f5b4a",
+  storageBucket: "mess-f5b4a.firebasestorage.app",
+  messagingSenderId: "668735817565",
+  appId: "1:668735817565:web:cb23daf31cb70c2b280ab4"
+};
+var fbDb = null;
+try {
+  if(window.firebase && window.firebase.initializeApp){
+    firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+  }
+} catch(e){ console.error('Firebase init failed', e); }
+
+var MESS_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function genMessCode(){
+  var s = '';
+  for(var i=0;i<6;i++){ s += MESS_CODE_CHARS.charAt(Math.floor(Math.random()*MESS_CODE_CHARS.length)); }
+  return s;
+}
+function getUrlMessCode(){
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var c = params.get('mess');
+    return c ? c.toUpperCase().trim() : null;
+  } catch(e){ return null; }
+}
+function setUrlMessCode(code){
+  try {
+    var url = new URL(window.location.href);
+    url.searchParams.set('mess', code);
+    window.history.replaceState({}, '', url.toString());
+  } catch(e){}
+}
+function messShareLink(){
+  try {
+    var url = new URL(window.location.href);
+    url.searchParams.set('mess', S.messCode);
+    return url.toString();
+  } catch(e){ return window.location.href; }
+}
+function localAdminKeyFor(code){ return LOCAL_ADMIN_KEY + ':' + (code || 'default'); }
+function localIdentityKeyFor(code){ return 'mh_identity:' + (code || 'default'); }
+async function checkCodeExists(code){
+  if(!fbDb || !code) return false;
+  try {
+    var snap = await fbDb.ref('messes/' + code + '/data').once('value');
+    return snap.exists();
+  } catch(e){ return false; }
+}
+function messRef(path){
+  return fbDb.ref('messes/' + S.messCode + (path ? '/' + path : ''));
+}
+async function remoteGetData(){
+  if(fbDb && S.messCode){
+    var snap = await messRef('data').once('value');
+    return snap.exists() ? snap.val() : null;
+  }
+  var res = await window.storage.get(DATA_KEY, true);
+  return res && res.value ? JSON.parse(res.value) : null;
+}
+async function remoteSetData(data){
+  if(fbDb && S.messCode){ await messRef('data').set(data); return; }
+  await window.storage.set(DATA_KEY, JSON.stringify(data), true);
+}
+async function remoteGetPin(){
+  if(fbDb && S.messCode){
+    var snap = await messRef('pin').once('value');
+    return snap.exists() ? snap.val() : null;
+  }
+  var res = await window.storage.get(PIN_KEY, true);
+  return res && res.value ? res.value : null;
+}
+async function remoteSetPin(pin){
+  if(fbDb && S.messCode){ await messRef('pin').set(pin); return; }
+  await window.storage.set(PIN_KEY, pin, true);
+}
+
+var mhPendingFocus = null;
 
 var S = {
   data: null,
@@ -557,7 +838,13 @@ var S = {
   toastTimer: null,
   onboardMembers: [],
   onboardName: '',
-  _pendingImport: null
+  _pendingImport: null,
+  messCode: null,
+  reminder: { enabled: false, time: '20:00', lastFiredDate: null },
+  mealsView: 'entry',
+  mealsEntryDate: null,
+  localIdentityId: null,
+  modalLocked: false
 };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -566,12 +853,59 @@ function todayStr(){ var d = new Date(); return d.getFullYear()+'-'+pad2(d.getMo
 function currentYm(){ var d = new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1); }
 function ymLabel(ym){ var p = ym.split('-'); var months = S.lang==='en' ? EN_MONTHS : BN_MONTHS; return months[parseInt(p[1],10)-1] + ' ' + p[0]; }
 function daysInMonth(ym){ var p = ym.split('-'); var y = parseInt(p[0],10), m = parseInt(p[1],10); return new Date(y, m, 0).getDate(); }
-function fmtNum(n){ if(n===null||n===undefined||isNaN(n)) n=0; return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtNum(n){
+  if(n===null||n===undefined||isNaN(n)) n=0;
+  var r = Math.round(n*100)/100;
+  return (r % 1 === 0) ? r.toLocaleString('en-US') : r.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
 function fmtInt(n){ if(n===null||n===undefined||isNaN(n)) n=0; var r = Math.round(n*100)/100; return (r % 1 === 0) ? String(r) : r.toFixed(2); }
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
+function currentActorName(){
+  var mem = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
+  if(mem && mem.name) return mem.name;
+  return S.isAdmin ? t('log.unknownAdmin') : t('log.unknownUser');
+}
+function logActivity(action, detail){
+  if(!S.data) return;
+  if(!Array.isArray(S.data.activityLog)) S.data.activityLog = [];
+  S.data.activityLog.unshift({ id: uid(), ts: new Date().toISOString(), action: action, detail: detail || '', actor: currentActorName() });
+  if(S.data.activityLog.length > 100) S.data.activityLog.length = 100;
+}
+function formatLogTime(iso){
+  try {
+    var d = new Date(iso);
+    var locale = S.lang === 'en' ? 'en-US' : 'bn-BD';
+    return d.toLocaleDateString(locale, { day:'2-digit', month:'short' }) + ' \u00b7 ' + d.toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit' });
+  } catch(e){ return ''; }
+}
+
+function compressImageFile(file, maxWidth, quality){
+  return new Promise(function(resolve, reject){
+    if(!file) { resolve(null); return; }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var scale = Math.min(1, maxWidth / img.width);
+        var w = Math.max(1, Math.round(img.width * scale));
+        var h = Math.max(1, Math.round(img.height * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try { resolve(canvas.toDataURL('image/jpeg', quality)); } catch(err){ reject(err); }
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function defaultData(){
-  return { messName: '', managerId: '', managerHistory: [], members: [], meals: {}, bazar: [], expenses: [], deposits: [] };
+  return { messName: '', managerId: '', managerHistory: [], members: [], meals: {}, bazar: [], expenses: [], deposits: [], activityLog: [] };
 }
 
 function findMemberById(id){
@@ -623,25 +957,24 @@ function normalizeData(){
   if(!Array.isArray(S.data.bazar)) S.data.bazar = [];
   if(!Array.isArray(S.data.expenses)) S.data.expenses = [];
   if(!Array.isArray(S.data.deposits)) S.data.deposits = [];
+  if(!Array.isArray(S.data.activityLog)) S.data.activityLog = [];
 }
 
 async function loadAll(){
   try {
-    var res = await window.storage.get(DATA_KEY, true);
-    S.data = res && res.value ? JSON.parse(res.value) : defaultData();
+    var data = await remoteGetData();
+    S.data = data || defaultData();
   } catch(e){
     S.data = defaultData();
-    try { await window.storage.set(DATA_KEY, JSON.stringify(S.data), true); } catch(e2){}
   }
   normalizeData();
   var sharedPin = null;
   try {
-    var pinRes = await window.storage.get(PIN_KEY, true);
-    sharedPin = pinRes && pinRes.value ? pinRes.value : null;
+    sharedPin = await remoteGetPin();
     S.pinExists = !!sharedPin;
   } catch(e){ S.pinExists = false; }
   try {
-    var localRes = await window.storage.get(LOCAL_ADMIN_KEY, false);
+    var localRes = await window.storage.get(localAdminKeyFor(S.messCode), false);
     var localPin = localRes && localRes.value ? localRes.value : null;
     S.isAdmin = !!(localPin && sharedPin && localPin === sharedPin);
   } catch(e){ S.isAdmin = false; }
@@ -653,6 +986,17 @@ async function loadAll(){
     var themeRes = await window.storage.get(THEME_KEY, false);
     if(themeRes && (themeRes.value === 'light' || themeRes.value === 'dark')) S.theme = themeRes.value;
   } catch(e){}
+  try {
+    var remRes = await window.storage.get(REMINDER_KEY, false);
+    if(remRes && remRes.value){
+      var parsed = JSON.parse(remRes.value);
+      if(parsed && typeof parsed === 'object') S.reminder = Object.assign({ enabled:false, time:'20:00', lastFiredDate:null }, parsed);
+    }
+  } catch(e){}
+  try {
+    var idRes = await window.storage.get(localIdentityKeyFor(S.messCode), false);
+    S.localIdentityId = idRes && idRes.value ? idRes.value : null;
+  } catch(e){ S.localIdentityId = null; }
   S.loaded = true;
   S.lastSync = new Date();
 }
@@ -661,9 +1005,8 @@ async function loadAll(){
    (handles monthly manager handover: old device auto-drops to view mode) */
 async function revalidateAdmin(){
   try {
-    var pinRes = await window.storage.get(PIN_KEY, true);
-    var sharedPin = pinRes && pinRes.value ? pinRes.value : null;
-    var localRes = await window.storage.get(LOCAL_ADMIN_KEY, false);
+    var sharedPin = await remoteGetPin();
+    var localRes = await window.storage.get(localAdminKeyFor(S.messCode), false);
     var localPin = localRes && localRes.value ? localRes.value : null;
     S.pinExists = !!sharedPin;
     var stillAdmin = !!(localPin && sharedPin && localPin === sharedPin);
@@ -680,7 +1023,7 @@ async function revalidateAdmin(){
 
 async function saveData(){
   try {
-    await window.storage.set(DATA_KEY, JSON.stringify(S.data), true);
+    await remoteSetData(S.data);
     S.lastSync = new Date();
     return true;
   } catch(e){
@@ -689,15 +1032,15 @@ async function saveData(){
   }
 }
 
+/* Fallback for when Firebase isn't configured (e.g. running without a mess code) */
 async function pollForUpdates(){
   if(!S.loaded) return;
   var active = document.activeElement;
   if(active && active.tagName === 'INPUT' && active.classList.contains('mh-live-guard')) return;
   try {
-    var res = await window.storage.get(DATA_KEY, true);
-    var fresh = res && res.value ? res.value : null;
-    if(fresh && fresh !== JSON.stringify(S.data)){
-      S.data = JSON.parse(fresh);
+    var fresh = await remoteGetData();
+    if(fresh && JSON.stringify(fresh) !== JSON.stringify(S.data)){
+      S.data = fresh;
       normalizeData();
       S.lastSync = new Date();
       render();
@@ -708,17 +1051,69 @@ async function pollForUpdates(){
   if(!document.getElementById('mh-overlay')) revalidateAdmin();
 }
 
+/* True real-time sync via Firebase listeners, used whenever a mess code + Firebase are available */
+var _fbListenersOn = false;
+function attachLiveListeners(){
+  if(!fbDb || !S.messCode || _fbListenersOn) return;
+  _fbListenersOn = true;
+  messRef('data').on('value', function(snap){
+    if(!S.loaded) return;
+    var active = document.activeElement;
+    if(active && active.tagName === 'INPUT' && active.classList.contains('mh-live-guard')) return;
+    var fresh = snap.exists() ? snap.val() : null;
+    if(!fresh) return;
+    if(JSON.stringify(fresh) !== JSON.stringify(S.data)){
+      S.data = fresh;
+      normalizeData();
+      S.lastSync = new Date();
+      render();
+    } else {
+      S.lastSync = new Date();
+      updateSyncLabel();
+    }
+  });
+  messRef('pin').on('value', function(){
+    if(!document.getElementById('mh-overlay')) revalidateAdmin();
+  });
+}
+
 /* ---------------- TOAST ---------------- */
-function showToast(msg){
+function showToast(msg, actionLabel, actionCallback){
   var old = document.getElementById('mh-toast');
   if(old) old.remove();
   var el = document.createElement('div');
   el.id = 'mh-toast';
   el.className = 'mh-toast';
-  el.textContent = msg;
+  var span = document.createElement('span');
+  span.textContent = msg;
+  el.appendChild(span);
+  if(actionLabel && typeof actionCallback === 'function'){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mh-toast-btn';
+    btn.textContent = actionLabel;
+    btn.onclick = function(){
+      clearTimeout(S.toastTimer);
+      el.remove();
+      actionCallback();
+    };
+    el.appendChild(btn);
+  }
   document.getElementById('mh-root').appendChild(el);
   clearTimeout(S.toastTimer);
-  S.toastTimer = setTimeout(function(){ el.remove(); }, 2600);
+  S.toastTimer = setTimeout(function(){ el.remove(); }, actionLabel ? 5000 : 2600);
+}
+
+function openEntryPhoto(type, id){
+  var list = type === 'bazar' ? S.data.bazar : S.data.expenses;
+  var item = list.filter(function(x){ return x.id === id; })[0];
+  if(!item || !item.photo) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal mh-photo-modal">';
+  html += '<img src="' + item.photo + '">';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:12px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button>';
+  html += '</div>';
+  overlay.innerHTML = html;
 }
 
 /* ---------------- CALC ---------------- */
@@ -777,6 +1172,108 @@ function calcMonth(ym){
 }
 
 /* ---------------- RENDER ROOT ---------------- */
+async function getRecentMesses(){
+  try {
+    var res = await window.storage.get(RECENT_KEY, false);
+    if(res && res.value){ var arr = JSON.parse(res.value); if(Array.isArray(arr)) return arr; }
+  } catch(e){}
+  return [];
+}
+async function addRecentMess(code, name){
+  try {
+    var list = await getRecentMesses();
+    list = list.filter(function(r){ return r.code !== code; });
+    list.unshift({ code: code, name: name });
+    if(list.length > 8) list = list.slice(0, 8);
+    await window.storage.set(RECENT_KEY, JSON.stringify(list), false);
+  } catch(e){}
+}
+async function removeRecentMess(code, ev){
+  if(ev) ev.stopPropagation();
+  try {
+    var list = await getRecentMesses();
+    list = list.filter(function(r){ return r.code !== code; });
+    await window.storage.set(RECENT_KEY, JSON.stringify(list), false);
+  } catch(e){}
+  renderWelcome();
+}
+function openRecentMess(code){
+  S.messCode = code;
+  setUrlMessCode(code);
+  startApp();
+}
+
+async function renderWelcome(){
+  var shell = document.getElementById('mh-shell');
+  if(!shell) return;
+  var recents = await getRecentMesses();
+  var html = '<div class="mh-welcome">';
+  html += '<div class="mh-welcome-emoji">🍚</div>';
+  html += '<div class="mh-welcome-title">' + t('welcome.title') + '</div>';
+  html += '<div class="mh-welcome-desc">' + t('welcome.desc') + '</div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" style="margin-top:22px;" onclick="MH.startCreateMess()">' + t('welcome.createBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:10px;" onclick="MH.renderJoinPrompt()">' + t('welcome.joinBtn') + '</button>';
+  if(recents.length){
+    html += '<div class="mh-welcome-recent-title">' + t('welcome.recentTitle') + '</div>';
+    recents.forEach(function(r){
+      html += '<div class="mh-welcome-recent-item" onclick="MH.openRecentMess(\'' + r.code + '\')">';
+      html += '<span>' + escapeHtml(r.name) + '</span>';
+      html += '<span class="mh-welcome-recent-right"><span class="mh-welcome-recent-code">' + escapeHtml(r.code) + '</span><span class="mh-welcome-recent-x" onclick="MH.removeRecentMess(\'' + r.code + '\',event)">✕</span></span>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  shell.innerHTML = html;
+}
+
+function renderJoinPrompt(){
+  var shell = document.getElementById('mh-shell');
+  if(!shell) return;
+  var html = '<div class="mh-welcome">';
+  html += '<div class="mh-welcome-title">' + t('welcome.joinTitle') + '</div>';
+  html += '<div class="mh-welcome-desc">' + t('welcome.joinDesc') + '</div>';
+  html += '<div class="mh-field" style="margin-top:18px;"><label>' + t('welcome.joinCodeLabel') + '</label><input id="mh-join-code" type="text" maxlength="6" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;text-align:center;font-size:18px;" placeholder="' + t('welcome.joinCodePlaceholder') + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();MH.confirmJoinMess();}"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.confirmJoinMess()">' + t('welcome.joinCodeBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:10px;" onclick="MH.renderWelcome()">' + t('welcome.backBtn') + '</button>';
+  html += '</div>';
+  shell.innerHTML = html;
+}
+
+async function startCreateMess(){
+  if(!fbDb){ showToast(t('welcome.noFirebase')); return; }
+  showToast(t('welcome.creatingMsg'));
+  var code = genMessCode();
+  var tries = 0;
+  while(await checkCodeExists(code) && tries < 6){ code = genMessCode(); tries++; }
+  S.messCode = code;
+  setUrlMessCode(code);
+  await startApp();
+}
+
+async function confirmJoinMess(){
+  var input = document.getElementById('mh-join-code');
+  var code = input ? input.value.trim().toUpperCase() : '';
+  if(!code){ showToast(t('welcome.joinCodePlaceholder')); return; }
+  if(!fbDb){ showToast(t('welcome.noFirebase')); return; }
+  var exists = await checkCodeExists(code);
+  if(!exists){ showToast(t('welcome.codeNotFound')); return; }
+  S.messCode = code;
+  setUrlMessCode(code);
+  await startApp();
+}
+
+async function startApp(){
+  await loadAll();
+  if(isSetupComplete()){ addRecentMess(S.messCode, S.data.messName); }
+  render();
+  initSwipeNav();
+  if(fbDb && S.messCode){ attachLiveListeners(); }
+  else { setInterval(pollForUpdates, 7000); }
+  setInterval(updateSyncLabel, 5000);
+  setInterval(checkReminder, 20000);
+  maybeShowLoginGate();
+}
+
 function render(){
   var root = document.getElementById('mh-root');
   if(root) root.classList.toggle('mh-dark', S.theme === 'dark');
@@ -786,20 +1283,47 @@ function render(){
     shell.innerHTML = renderOnboarding();
     return;
   }
+  var tabChanged = (S._lastRenderedTab !== S.tab);
+  S._lastRenderedTab = S.tab;
   var html = '';
   html += renderHeader();
   html += renderTabs();
-  html += renderTabContent();
+  html += '<div id="mh-tab-content"' + (tabChanged ? ' class="mh-tab-anim"' : '') + '>' + renderTabContent() + '</div>';
   shell.innerHTML = html;
   updateSyncLabel();
   attachGlobalHandlers();
+  restorePendingFocus();
+  scrollActiveTabIntoView();
+}
+
+function restorePendingFocus(){
+  if(!mhPendingFocus) return;
+  var sel = 'input[data-date="' + mhPendingFocus.date + '"][data-member="' + mhPendingFocus.member + '"]';
+  var el = document.querySelector(sel);
+  mhPendingFocus = null;
+  if(el){ el.focus(); if(el.select) el.select(); }
+}
+
+function scrollActiveTabIntoView(){
+  var active = document.querySelector('.mh-tab.active');
+  if(active && active.scrollIntoView){
+    active.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }
 }
 
 function updateSyncLabel(){
   var el = document.getElementById('mh-sync-label');
   if(!el || !S.lastSync) return;
   var secs = Math.max(0, Math.round((new Date() - S.lastSync)/1000));
-  el.textContent = secs < 3 ? t('sync.justNow') : (secs + t('sync.agoSuffix'));
+  if(secs < 3){
+    el.textContent = t('sync.justNow');
+  } else if(secs < 60){
+    el.textContent = secs + t('sync.agoSuffix');
+  } else if(secs < 3600){
+    el.textContent = Math.floor(secs/60) + t('sync.minAgoSuffix');
+  } else {
+    el.textContent = Math.floor(secs/3600) + t('sync.hourAgoSuffix');
+  }
 }
 
 function renderHeader(){
@@ -808,11 +1332,14 @@ function renderHeader(){
   html += '<div class="mh-header">';
   html += '  <div class="mh-title-row">';
   html += '    <div><div class="mh-title">' + escapeHtml(S.data.messName || t('app.defaultName')) + '</div><div class="mh-subtitle">' + t('app.subtitle') + '</div></div>';
+  html += '    <div class="mh-header-actions">';
+  html += '      <button class="mh-icon-round-btn' + (S.tab === 'settings' ? ' active' : '') + '" onclick="MH.setTab(\'settings\')" title="' + t('tabs.settings') + '">⚙️</button>';
   if(S.isAdmin){
-    html += '    <button class="mh-lock-btn on" onclick="MH.openAdminModal()">' + t('lock.on') + '</button>';
+    html += '      <button class="mh-lock-btn on" onclick="MH.openAdminModal()">' + t('lock.on') + '</button>';
   } else {
-    html += '    <button class="mh-lock-btn" onclick="MH.openAdminModal()">' + t('lock.view') + '</button>';
+    html += '      <button class="mh-lock-btn" onclick="MH.openAdminModal()">' + t('lock.view') + '</button>';
   }
+  html += '    </div>';
   html += '  </div>';
   var mgr = findMemberById(S.data.managerId);
   html += '  <div class="mh-manager-badge">👤 ' + t('manager.label') + ': <b>' + (mgr ? escapeHtml(mgr.name) : t('manager.none')) + '</b></div>';
@@ -828,17 +1355,19 @@ function renderHeader(){
 
 function renderTabs(){
   var tabs = [
-    ['dashboard', t('tabs.dashboard')],
-    ['meals', t('tabs.meals')],
-    ['bazar', t('tabs.bazar')],
-    ['expenses', t('tabs.expenses')],
-    ['deposits', t('tabs.deposits')],
-    ['members', t('tabs.members')],
-    ['settings', '⚙️ ' + t('tabs.settings')]
+    ['dashboard', '📒', t('tabs.dashboard')],
+    ['meals', '🍽️', t('tabs.meals')],
+    ['bazar', '🛒', t('tabs.bazar')],
+    ['expenses', '💸', t('tabs.expenses')],
+    ['deposits', '💰', t('tabs.deposits')],
+    ['members', '👥', t('tabs.members')],
+    ['log', '🕘', t('tabs.log')]
   ];
-  var html = '<div class="mh-tabs">';
+  var html = '<div id="mh-bottom-nav">';
   tabs.forEach(function(tb){
-    html += '<button class="mh-tab ' + (S.tab===tb[0]?'active':'') + '" onclick="MH.setTab(\'' + tb[0] + '\')">' + tb[1] + '</button>';
+    html += '<button class="mh-nav-item ' + (S.tab===tb[0]?'active':'') + '" onclick="MH.setTab(\'' + tb[0] + '\')">';
+    html += '<span class="mh-nav-icon">' + tb[1] + '</span><span class="mh-nav-label">' + tb[2] + '</span>';
+    html += '</button>';
   });
   html += '</div>';
   return html;
@@ -851,6 +1380,7 @@ function renderTabContent(){
   if(S.tab === 'expenses') return renderExpenses();
   if(S.tab === 'deposits') return renderDeposits();
   if(S.tab === 'members') return renderMembers();
+  if(S.tab === 'log') return renderActivityLog();
   if(S.tab === 'settings') return renderSettings();
   return '';
 }
@@ -969,13 +1499,14 @@ function renderDashboard(){
     var color = positive ? 'var(--green)' : 'var(--rust)';
     var isArchived = (m.active === false);
     var initial = m.name ? m.name.trim().charAt(0).toUpperCase() : '?';
-    html += '<div class="mh-tag">';
+    var tagStyle = positive ? '' : ' style="border-color:var(--rust);background:var(--rust-soft);"';
+    html += '<div class="mh-tag"' + tagStyle + '>';
     html += '<div class="mh-tag-avatar-row">';
     html += '<div class="mh-tag-avatar" style="background:' + m.color + '">' + initial + '</div>';
     html += '<div class="mh-tag-name">' + escapeHtml(m.name) + (isArchived ? '<span class="mh-tag-archived-badge">' + t('dashboard.archivedBadge') + '</span>' : '') + '</div>';
     html += '</div>';
     html += '<div class="mh-tag-balance" style="color:' + color + '"><span class="mh-arrow">' + (positive ? '▲' : '▼') + '</span>' + (positive?'':'-') + '৳' + fmtNum(Math.abs(pm.balance)) + '</div>';
-    html += '<div class="mh-tag-status" style="color:' + color + '">' + (positive ? t('dashboard.credit') : t('dashboard.due')) + '</div>';
+    html += '<div class="mh-tag-status" style="color:' + color + ';font-weight:' + (positive?'600':'800') + ';">' + (positive ? t('dashboard.credit') : '⚠️ ' + t('dashboard.due')) + '</div>';
     html += '<div class="mh-tag-meta"><span>🍽️ ' + t('dashboard.mealsWord') + ' ' + fmtInt(pm.meals) + '</span><span>৳ ' + t('dashboard.totalCostWord') + ' ' + fmtInt(pm.cost) + '</span></div>';
     if(pm.otherShare > 0){
       html += '<div style="font-size:9.5px;color:var(--ink-soft);margin-top:3px;">' + t('dashboard.breakdownFood') + ' ৳' + fmtInt(pm.mealCost) + ' + ' + t('dashboard.breakdownOther') + ' ৳' + fmtInt(pm.otherShare) + '</div>';
@@ -992,15 +1523,64 @@ function statBox(num, label){
 
 /* ---------------- MEALS ---------------- */
 function renderMeals(){
-  var members = membersForMonth(S.ym);
-  var days = daysInMonth(S.ym);
-  var today = todayStr();
-  var weekdays = S.lang === 'en' ? EN_WEEKDAYS : BN_WEEKDAYS;
+  if(!S.mealsEntryDate) S.mealsEntryDate = todayStr();
   var html = '';
   html += '<div class="mh-section-title"><span>' + t('meals.title') + '</span><span class="mh-eyebrow">' + ymLabel(S.ym) + '</span></div>';
   if(!S.isAdmin){
     html += '<div class="mh-note-banner">' + t('meals.viewBanner') + '</div>';
   }
+  html += '<div class="mh-seg" style="margin-bottom:14px;">';
+  html += '<button class="' + (S.mealsView==='entry'?'active':'') + '" onclick="MH.setMealsView(\'entry\')">' + t('meals.viewEntryTab') + '</button>';
+  html += '<button class="' + (S.mealsView==='chart'?'active':'') + '" onclick="MH.setMealsView(\'chart\')">' + t('meals.viewChartTab') + '</button>';
+  html += '</div>';
+  if(S.mealsView === 'entry'){
+    html += renderMealsEntry();
+  } else {
+    html += renderMealsChart();
+  }
+  return html;
+}
+
+function renderMealsEntry(){
+  var date = S.mealsEntryDate || todayStr();
+  var entryYm = date.slice(0,7);
+  var members = membersForMonth(entryYm).filter(function(m){ return m.active !== false; });
+  var row = S.data.meals[date] || {};
+  var html = '';
+  html += '<div class="mh-field"><label>' + t('meals.date') + '</label><input type="date" value="' + date + '" ' + (S.isAdmin ? 'onchange="MH.setMealsEntryDate(this.value)"' : 'disabled') + '></div>';
+  if(entryYm !== S.ym){
+    html += '<div class="mh-note-banner">' + t('meals.entryOutsideMonth') + '</div>';
+  }
+  if(members.length === 0){
+    html += emptyState(t('meals.entryNoMembers'));
+    return html;
+  }
+  html += '<div class="mh-table-wrap" style="padding:2px 12px;">';
+  var dayTotal = 0;
+  members.forEach(function(m){
+    var val = row[m.id] !== undefined ? row[m.id] : '';
+    dayTotal += (parseFloat(val) || 0);
+    var initial = m.name ? m.name.trim().charAt(0).toUpperCase() : '?';
+    html += '<div class="mh-meal-entry-row">';
+    html += '<div class="mh-meal-entry-who"><div class="mh-meal-entry-avatar" style="background:' + m.color + '">' + initial + '</div><div class="mh-meal-entry-name">' + escapeHtml(m.name) + '</div></div>';
+    if(S.isAdmin){
+      html += '<input class="mh-meal-entry-input" type="number" min="0" step="0.5" inputmode="decimal" enterkeyhint="next" value="' + (val===''?'':val) + '" placeholder="0" data-date="' + date + '" data-member="' + m.id + '" onchange="MH.updateMeal(this)">';
+    } else {
+      html += '<div class="mh-meal-entry-input" style="border-color:transparent;">' + (val === '' ? '&mdash;' : fmtInt(val)) + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="mh-meal-entry-total"><span>' + t('meals.entryDayTotal') + '</span><span class="mh-meal-entry-total-num">' + fmtInt(dayTotal) + '</span></div>';
+  return html;
+}
+
+function renderMealsChart(){
+  var members = membersForMonth(S.ym);
+  var days = daysInMonth(S.ym);
+  var today = todayStr();
+  var weekdays = S.lang === 'en' ? EN_WEEKDAYS : BN_WEEKDAYS;
+  var html = '';
   html += '<div class="mh-table-wrap"><table class="mh-table"><thead><tr><th style="text-align:left;">' + t('meals.date') + '</th>';
   members.forEach(function(m){ html += '<th>' + escapeHtml(m.name) + (m.active === false ? ' *' : '') + '</th>'; });
   html += '<th>' + t('meals.total') + '</th></tr></thead><tbody>';
@@ -1021,13 +1601,13 @@ function renderMeals(){
       rowTotal += (parseFloat(val) || 0);
       colTotals[m.id] += (parseFloat(val) || 0);
       if(S.isAdmin && m.active !== false){
-        html += '<td><input class="mh-meal-input" type="number" min="0" step="0.5" value="' + (val===''?'':val) + '" placeholder="0" data-date="' + date + '" data-member="' + m.id + '" onchange="MH.updateMeal(this)"></td>';
+        html += '<td><input class="mh-meal-input" type="number" min="0" step="0.5" inputmode="decimal" enterkeyhint="next" value="' + (val===''?'':val) + '" placeholder="0" data-date="' + date + '" data-member="' + m.id + '" onchange="MH.updateMeal(this)"></td>';
       } else {
         html += '<td>' + (val === '' ? '&mdash;' : fmtInt(val)) + '</td>';
       }
     });
     grandTotal += rowTotal;
-    html += '<td class="mh-mono" style="font-family:JetBrains Mono,monospace;">' + fmtInt(rowTotal) + '</td>';
+    html += '<td class="mh-mono" style="font-family:Roboto Mono,monospace;">' + fmtInt(rowTotal) + '</td>';
     html += '</tr>';
   }
 
@@ -1061,6 +1641,7 @@ function renderBazar(){
     html += '</div>';
     html += '<div class="mh-field"><label>' + t('bazar.itemLabel') + '</label><input id="mh-bazar-item" type="text" placeholder="' + t('bazar.itemPlaceholder') + '"></div>';
     html += '<div class="mh-field"><label>' + t('bazar.amountLabel') + '</label><input id="mh-bazar-amount" type="number" min="0" step="0.01" placeholder="৳ 0.00"></div>';
+    html += '<div class="mh-field"><label>' + t('common.photoLabel') + '</label><input id="mh-bazar-photo" type="file" accept="image/*"></div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addBazar()">' + t('bazar.addBtn') + '</button>';
     html += '</div>';
   }
@@ -1075,8 +1656,10 @@ function renderBazar(){
       html += '<div><div class="mh-list-main">' + escapeHtml(b.item || t('tabs.bazar')) + '</div>';
       html += '<div class="mh-list-sub">' + b.date + ' &middot; ' + escapeHtml(mem ? mem.name : t('bazar.unknown')) + '</div></div>';
       html += '<div style="display:flex;align-items:center;gap:8px;">';
+      if(b.photo){ html += '<img class="mh-thumb" src="' + b.photo + '" onclick="MH.openEntryPhoto(\'bazar\',\'' + b.id + '\')">'; }
       html += '<div class="mh-list-amt">৳' + fmtNum(b.amount) + '</div>';
       if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.openEditBazarModal(\'' + b.id + '\')">✏️</button>';
         html += '<button class="mh-icon-btn" onclick="MH.deleteBazar(\'' + b.id + '\')">🗑️</button>';
       }
       html += '</div></div>';
@@ -1105,6 +1688,7 @@ function renderExpenses(){
     html += '</div>';
     html += '<div class="mh-field"><label>' + t('expenses.noteLabel') + '</label><input id="mh-exp-note" type="text" placeholder="' + t('expenses.notePlaceholder') + '"></div>';
     html += '<div class="mh-field"><label>' + t('expenses.amountLabel') + '</label><input id="mh-exp-amount" type="number" min="0" step="0.01" placeholder="৳ 0.00"></div>';
+    html += '<div class="mh-field"><label>' + t('common.photoLabel') + '</label><input id="mh-exp-photo" type="file" accept="image/*"></div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addExpense()">' + t('expenses.addBtn') + '</button>';
     html += '</div>';
   }
@@ -1119,8 +1703,10 @@ function renderExpenses(){
       html += '<div><div class="mh-list-main">' + cat.icon + ' ' + escapeHtml(t('categories.' + x.category)) + '</div>';
       html += '<div class="mh-list-sub">' + x.date + (x.note ? ' &middot; ' + escapeHtml(x.note) : '') + '</div></div>';
       html += '<div style="display:flex;align-items:center;gap:8px;">';
+      if(x.photo){ html += '<img class="mh-thumb" src="' + x.photo + '" onclick="MH.openEntryPhoto(\'expense\',\'' + x.id + '\')">'; }
       html += '<div class="mh-list-amt">৳' + fmtNum(x.amount) + '</div>';
       if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.openEditExpenseModal(\'' + x.id + '\')">✏️</button>';
         html += '<button class="mh-icon-btn" onclick="MH.deleteExpense(\'' + x.id + '\')">🗑️</button>';
       }
       html += '</div></div>';
@@ -1173,6 +1759,7 @@ function renderDeposits(){
       html += '<div style="display:flex;align-items:center;gap:8px;">';
       html += '<div class="mh-list-amt" style="color:var(--green);">+৳' + fmtNum(d.amount) + '</div>';
       if(S.isAdmin){
+        html += '<button class="mh-icon-btn" onclick="MH.openEditDepositModal(\'' + d.id + '\')">✏️</button>';
         html += '<button class="mh-icon-btn" onclick="MH.deleteDeposit(\'' + d.id + '\')">🗑️</button>';
       }
       html += '</div></div>';
@@ -1190,6 +1777,8 @@ function renderMembers(){
   if(S.isAdmin){
     html += '<div class="mh-card">';
     html += '<div class="mh-field"><label>' + t('members.newMemberLabel') + '</label><input id="mh-new-member" type="text" placeholder="' + t('members.newMemberPlaceholder') + '"></div>';
+    html += '<div class="mh-field"><label>' + t('members.newMemberPhoneLabel') + '</label><input id="mh-new-member-phone" type="text" inputmode="tel" placeholder="' + t('members.newMemberPhonePlaceholder') + '"></div>';
+    html += '<div class="mh-field"><label>' + t('members.newMemberPasswordLabel') + '</label><input id="mh-new-member-password" type="text" placeholder="' + t('members.newMemberPasswordPlaceholder') + '"></div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.addMember()">' + t('members.addBtn') + '</button>';
     html += '</div>';
   }
@@ -1203,11 +1792,16 @@ function renderMembers(){
     act.forEach(function(m){
       html += '<div class="mh-list-row">';
       html += '<div style="display:flex;align-items:center;gap:10px;">';
-      html += '<span style="width:10px;height:10px;border-radius:50%;background:' + m.color + ';display:inline-block;"></span>';
-      html += '<span class="mh-list-main">' + escapeHtml(m.name) + (m.id === S.data.managerId ? ' <span class="mh-chip">' + t('manager.label') + '</span>' : '') + '</span>';
+      html += '<span style="width:10px;height:10px;border-radius:50%;background:' + m.color + ';display:inline-block;margin-top:3px;align-self:flex-start;"></span>';
+      html += '<div><div class="mh-list-main">' + escapeHtml(m.name) + (m.id === S.data.managerId ? ' <span class="mh-chip">' + t('manager.label') + '</span>' : '') + (m.id === S.localIdentityId ? ' <span class="mh-chip">' + t('login.youChip') + '</span>' : '') + '</div>';
+      if(m.phone){ html += '<div class="mh-list-sub">' + escapeHtml(m.phone) + '</div>'; }
+      html += '</div>';
       html += '</div>';
       if(S.isAdmin){
+        html += '<div style="display:flex;gap:6px;">';
+        html += '<button class="mh-icon-btn" onclick="MH.openEditMemberModal(\'' + m.id + '\')">✏️</button>';
         html += '<button class="mh-icon-btn" onclick="MH.archiveMember(\'' + m.id + '\')" title="' + t('members.reactivateBtn') + '">🗑️</button>';
+        html += '</div>';
       }
       html += '</div>';
     });
@@ -1232,6 +1826,32 @@ function renderMembers(){
     html += '<p style="font-size:11px;color:var(--ink-soft);margin:10px 0 0;">' + t('members.archiveNote') + '</p>';
     html += '</div>';
   }
+
+  return html;
+}
+
+/* ---------------- ACTIVITY LOG ---------------- */
+function renderActivityLog(){
+  var html = '';
+  html += '<div class="mh-section-title"><span>' + t('log.title') + '</span></div>';
+  var entries = Array.isArray(S.data.activityLog) ? S.data.activityLog : [];
+  html += '<div class="mh-card">';
+  if(entries.length === 0){
+    html += emptyState(t('log.empty'));
+  } else {
+    entries.forEach(function(e){
+      html += '<div class="mh-list-row">';
+      html += '<div><div class="mh-list-main">' + escapeHtml(t('log.' + e.action)) + '</div>';
+      var subParts = [];
+      if(e.actor){ subParts.push(e.actor); }
+      if(e.detail){ subParts.push(e.detail); }
+      if(subParts.length){ html += '<div class="mh-list-sub">' + escapeHtml(subParts.join(' · ')) + '</div>'; }
+      html += '</div>';
+      html += '<div class="mh-list-amt" style="font-size:10.5px;color:var(--ink-soft);white-space:nowrap;">' + formatLogTime(e.ts) + '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
   return html;
 }
 
@@ -1239,6 +1859,36 @@ function renderMembers(){
 function renderSettings(){
   var html = '';
   html += '<div class="mh-section-title"><span>' + t('settings.title') + '</span></div>';
+
+  if(S.messCode){
+    html += '<div class="mh-card">';
+    html += '<div class="mh-field" style="margin-bottom:8px;"><label>' + t('settings.linkTitle') + '</label>';
+    html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">' + t('settings.linkDesc') + '</p>';
+    html += '<div style="text-align:center;font-family:\'Roboto Mono\',monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--green);padding:8px;background:var(--paper-dark);border-radius:8px;margin-bottom:10px;">' + escapeHtml(S.messCode) + '</div>';
+    html += '</div>';
+    html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.copyMessLink()">' + t('settings.copyLinkBtn') + '</button>';
+    html += '</div>';
+  }
+
+  {
+    var me = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
+    html += '<div class="mh-card">';
+    html += '<div class="mh-field" style="margin-bottom:8px;"><label>' + t('profile.settingsTitle') + '</label>';
+    if(me){
+      html += '<p style="font-size:13px;margin:0 0 2px;font-weight:600;">' + escapeHtml(me.name) + '</p>';
+      if(me.phone){ html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">' + escapeHtml(me.phone) + '</p>'; }
+    } else {
+      html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 10px;">' + t('profile.settingsDesc') + '</p>';
+    }
+    html += '</div>';
+    if(me){
+      html += '<button class="mh-btn mh-btn-ghost mh-btn-block" onclick="MH.openMyProfileModal()">' + t('profile.editBtn') + '</button>';
+      html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.logoutIdentity()">' + t('profile.logoutBtn') + '</button>';
+    } else {
+      html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openLoginModal(true)">' + t('login.loginBtn') + '</button>';
+    }
+    html += '</div>';
+  }
 
   if(S.isAdmin){
     html += '<div class="mh-card">';
@@ -1280,7 +1930,18 @@ function renderSettings(){
   html += '<div class="mh-card">';
   html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">' + t('settings.reportDesc') + '</p>';
   html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.printReport()">' + t('settings.printBtn') + '</button>';
+  html += '<button id="mh-pdf-btn" class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.downloadReportPDF()">' + t('settings.pdfBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.shareReport()">' + t('common.shareBtn') + '</button>';
   html += '<div id="mh-print-report" class="mh-print-only"></div>';
+  html += '</div>';
+
+  html += '<div class="mh-section-title"><span>' + t('settings.reminderTitle') + '</span></div>';
+  html += '<div class="mh-card">';
+  html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">' + t('settings.reminderDesc') + '</p>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">';
+  html += '<label style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;"><input type="checkbox" ' + (S.reminder.enabled ? 'checked' : '') + ' onchange="MH.toggleReminder(this)"> ' + t('settings.reminderEnable') + '</label>';
+  html += '<div class="mh-field" style="margin:0;"><input type="time" value="' + escapeHtml(S.reminder.time) + '" onchange="MH.setReminderTime(this)" style="width:110px;"></div>';
+  html += '</div>';
   html += '</div>';
 
   if(S.isAdmin){
@@ -1292,11 +1953,18 @@ function renderSettings(){
     html += '<div style="border-top:1px dashed var(--rule);margin:16px 0 12px;"></div>';
     html += '<div class="mh-field"><label>' + t('settings.uploadFileLabel') + '</label><input id="mh-upload-file" type="file" accept=".json,application/json" onchange="MH.handleUploadFile(this)"></div>';
     html += '<div style="text-align:center;font-size:11px;color:var(--ink-soft);margin:6px 0;">' + t('settings.or') + '</div>';
-    html += '<div class="mh-field"><label>' + t('settings.pasteLabel') + '</label><textarea id="mh-upload-paste" rows="4" placeholder="{ &quot;members&quot;: ... }" style="font-family:JetBrains Mono,monospace;font-size:12px;resize:vertical;"></textarea></div>';
+    html += '<div class="mh-field"><label>' + t('settings.pasteLabel') + '</label><textarea id="mh-upload-paste" rows="4" placeholder="{ &quot;members&quot;: ... }" style="font-family:Roboto Mono,monospace;font-size:12px;resize:vertical;"></textarea></div>';
     html += '<button class="mh-btn mh-btn-danger mh-btn-block" onclick="MH.handleUploadPaste()">' + t('settings.uploadBtn') + '</button>';
     html += '<p style="font-size:11px;color:var(--rust);margin:10px 0 0;">' + t('settings.backupWarning') + '</p>';
     html += '</div>';
   }
+
+  html += '<div class="mh-section-title"><span>' + t('settings.logoutTitle') + '</span></div>';
+  html += '<div class="mh-card">';
+  html += '<button class="mh-btn mh-btn-danger mh-btn-block" onclick="MH.logoutMess()">' + t('settings.logoutBtn') + '</button>';
+  html += '<p style="font-size:11px;color:var(--ink-soft);margin:10px 0 0;">' + t('settings.logoutDesc') + '</p>';
+  html += '</div>';
+
   return html;
 }
 
@@ -1361,8 +2029,8 @@ async function finishOnboarding(){
 
   if(pinVal){
     try {
-      await window.storage.set(PIN_KEY, pinVal, true);
-      await window.storage.set(LOCAL_ADMIN_KEY, pinVal, false);
+      await remoteSetPin(pinVal);
+      await window.storage.set(localAdminKeyFor(S.messCode), pinVal, false);
       S.pinExists = true; S.isAdmin = true;
     } catch(e){ showToast(t('admin.problemToast')); }
   }
@@ -1370,6 +2038,7 @@ async function finishOnboarding(){
   S.onboardMembers = []; S.onboardName = '';
   render();
   showToast(name + t('onboard.doneToastSuffix'));
+  maybeShowLoginGate();
 }
 
 /* ---------------- ADMIN MODAL ---------------- */
@@ -1391,45 +2060,128 @@ function openAdminModal(){
   if(S.isAdmin){
     html += '<div class="mh-modal"><h3>' + t('admin.onTitle') + '</h3><p>' + t('admin.onDesc') + '</p>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openChangeAdminModal()">' + t('admin.changeBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openChangePinOnlyModal()">' + t('admin.changePinOnlyBtn') + '</button>';
     html += '<button class="mh-btn mh-btn-danger mh-btn-block" style="margin-top:8px;" onclick="MH.logoutAdmin()">' + t('admin.logoutBtn') + '</button>';
     html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.closeBtn') + '</button></div>';
   } else if(!S.pinExists){
     html += '<div class="mh-modal"><h3>' + t('admin.firstSetupTitle') + '</h3><p>' + t('admin.firstSetupDesc') + '</p>';
     html += '<div class="mh-field"><label>' + t('admin.newPinLabel') + '</label><input id="mh-new-pin" type="password" inputmode="numeric" placeholder="1234"></div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.setupPin()">' + t('admin.setPinBtn') + '</button>';
-    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.cancelBtn') + '</button></div>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.cancelAdminModal()">' + t('admin.cancelBtn') + '</button></div>';
   } else {
     html += '<div class="mh-modal"><h3>' + t('admin.enterPinTitle') + '</h3><p>' + t('admin.enterPinDesc') + '</p>';
     html += '<div class="mh-field"><label>' + t('admin.pinLabel') + '</label><input id="mh-enter-pin" type="password" inputmode="numeric" placeholder="' + t('admin.pinPlaceholder') + '"></div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.checkPin()">' + t('admin.enterBtn') + '</button>';
-    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('admin.cancelBtn') + '</button></div>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.cancelAdminModal()">' + t('admin.cancelBtn') + '</button>';
+    html += '<div style="text-align:center;margin-top:12px;"><a href="#" style="font-size:12px;color:var(--ink-soft);text-decoration:underline;" onclick="MH.openForgotPinModal();return false;">' + t('admin.forgotPinLink') + '</a></div></div>';
   }
   overlay.innerHTML = html;
 }
-function closeModal(){
+function closeModal(force){
+  if(S.modalLocked && !force) return;
   var el = document.getElementById('mh-overlay');
   if(el) el.remove();
+}
+function cancelAdminModal(){
+  if(S.modalLocked){ openLoginModal(true); } else { closeModal(); }
+}
+
+async function maybeShowLoginGate(){
+  if(!isSetupComplete()) return;
+  if(S.isAdmin) return;
+  var mem = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
+  if(mem) return;
+  S.localIdentityId = null;
+  openLoginModal(true);
+}
+
+function openLoginModal(mandatory){
+  var overlay = ensureOverlay();
+  S.modalLocked = !!mandatory;
+  var html = '<div class="mh-modal"><h3>' + t('login.title') + '</h3><p>' + (mandatory ? t('login.descMandatory') : t('login.desc')) + '</p>';
+  html += '<div class="mh-field"><label>' + t('login.phoneLabel') + '</label><input id="mh-login-phone" type="text" inputmode="tel" placeholder="' + t('login.phonePlaceholder') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('login.passwordLabel') + '</label><input id="mh-login-password" type="text" placeholder="' + t('login.passwordPlaceholder') + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.submitLogin()">' + t('login.loginBtn') + '</button>';
+  if(!mandatory){
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button>';
+  } else {
+    html += '<div style="text-align:center;margin-top:12px;"><a href="#" style="font-size:12px;color:var(--ink-soft);text-decoration:underline;" onclick="MH.openAdminModal();return false;">' + t('login.adminPinLink') + '</a></div>';
+  }
+  html += '</div>';
+  overlay.innerHTML = html;
+}
+
+async function submitLogin(){
+  var phoneEl = document.getElementById('mh-login-phone');
+  var passEl = document.getElementById('mh-login-password');
+  var phone = phoneEl ? phoneEl.value.trim() : '';
+  var password = passEl ? passEl.value.trim() : '';
+  if(!phone || !password){ showToast(t('login.needBoth')); return; }
+  var match = S.data.members.filter(function(m){
+    return m.phone && m.phone.trim() === phone && m.password && m.password === password;
+  })[0];
+  if(!match){ showToast(t('login.wrongCreds')); return; }
+  S.localIdentityId = match.id;
+  try { await window.storage.set(localIdentityKeyFor(S.messCode), match.id, false); } catch(e){}
+  S.modalLocked = false;
+  closeModal(true);
+  render();
+  showToast(match.name + t('login.welcomeSuffix'));
+}
+
+async function logoutIdentity(){
+  S.localIdentityId = null;
+  try { await window.storage.set(localIdentityKeyFor(S.messCode), '', false); } catch(e){}
+  render();
+  openLoginModal(true);
+}
+
+function openMyProfileModal(){
+  var mem = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
+  if(!mem) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('profile.title') + '</h3>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberLabel') + '</label><input id="mh-profile-name" type="text" value="' + escapeHtml(mem.name) + '"></div>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberPhoneLabel') + '</label><input id="mh-profile-phone" type="text" inputmode="tel" value="' + escapeHtml(mem.phone || '') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberPasswordLabel') + '</label><input id="mh-profile-password" type="text" value="' + escapeHtml(mem.password || '') + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.saveMyProfile()">' + t('common.saveBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+
+async function saveMyProfile(){
+  var mem = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
+  if(!mem) return;
+  var name = document.getElementById('mh-profile-name').value.trim();
+  if(!name){ showToast(t('toast.nameRequired')); return; }
+  var phone = document.getElementById('mh-profile-phone').value.trim();
+  var password = document.getElementById('mh-profile-password').value.trim();
+  var oldName = mem.name;
+  mem.name = name; mem.phone = phone; mem.password = password;
+  logActivity('user_updated', oldName === name ? name : (oldName + ' \u2192 ' + name));
+  var ok = await saveData();
+  if(ok){ closeModal(); render(); showToast(t('common.updated')); }
 }
 
 async function setupPin(){
   var val = document.getElementById('mh-new-pin').value.trim();
   if(val.length < 4){ showToast(t('onboard.pinTooShort')); return; }
   try {
-    await window.storage.set(PIN_KEY, val, true);
-    await window.storage.set(LOCAL_ADMIN_KEY, val, false);
-    S.pinExists = true; S.isAdmin = true;
-    closeModal(); render(); showToast(t('admin.onToast'));
+    await remoteSetPin(val);
+    await window.storage.set(localAdminKeyFor(S.messCode), val, false);
+    S.pinExists = true; S.isAdmin = true; S.modalLocked = false;
+    closeModal(true); render(); showToast(t('admin.onToast'));
   } catch(e){ showToast(t('admin.problemToast')); }
 }
 
 async function checkPin(){
   var val = document.getElementById('mh-enter-pin').value.trim();
   try {
-    var res = await window.storage.get(PIN_KEY, true);
-    var pin = res && res.value ? res.value : null;
+    var pin = await remoteGetPin();
     if(pin && pin === val){
-      await window.storage.set(LOCAL_ADMIN_KEY, val, false);
-      S.isAdmin = true; closeModal(); render(); showToast(t('admin.onToast'));
+      await window.storage.set(localAdminKeyFor(S.messCode), val, false);
+      S.isAdmin = true; S.modalLocked = false;
+      closeModal(true); render(); showToast(t('admin.onToast'));
     } else {
       showToast(t('admin.wrongPin'));
     }
@@ -1437,8 +2189,45 @@ async function checkPin(){
 }
 
 async function logoutAdmin(){
-  try { await window.storage.set(LOCAL_ADMIN_KEY, '', false); } catch(e){}
+  try { await window.storage.set(localAdminKeyFor(S.messCode), '', false); } catch(e){}
   S.isAdmin = false; closeModal(); render(); showToast(t('admin.offToast'));
+}
+
+function logoutMess(){
+  if(!window.confirm(t('settings.logoutConfirm'))) return;
+  try {
+    var url = new URL(window.location.href);
+    url.searchParams.delete('mess');
+    window.location.href = url.toString();
+  } catch(e){ window.location.href = window.location.pathname; }
+}
+
+function openForgotPinModal(){
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('admin.resetTitle') + '</h3>';
+  html += '<p style="color:var(--rust);">' + t('admin.resetWarn') + '</p>';
+  html += '<div class="mh-field"><label>' + t('admin.resetNameLabel') + '</label><input id="mh-reset-name" type="text" placeholder="' + t('admin.resetNamePlaceholder') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('admin.resetNewPinLabel') + '</label><input id="mh-reset-newpin" type="password" inputmode="numeric" placeholder="1234"></div>';
+  html += '<button class="mh-btn mh-btn-danger mh-btn-block" onclick="MH.confirmForgotPin()">' + t('admin.resetConfirmBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openAdminModal()">' + t('admin.backBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+
+async function confirmForgotPin(){
+  var typedName = document.getElementById('mh-reset-name').value.trim();
+  var newPin = document.getElementById('mh-reset-newpin').value.trim();
+  var actualName = (S.data.messName || '').trim();
+  if(!actualName || typedName.toLowerCase() !== actualName.toLowerCase()){
+    showToast(t('admin.resetNameMismatch'));
+    return;
+  }
+  if(newPin.length < 4){ showToast(t('onboard.pinTooShort')); return; }
+  try {
+    await remoteSetPin(newPin);
+    await window.storage.set(localAdminKeyFor(S.messCode), newPin, false);
+    S.pinExists = true; S.isAdmin = true; S.modalLocked = false;
+    closeModal(true); render(); showToast(t('admin.resetDoneToast'));
+  } catch(e){ showToast(t('admin.problemToast')); }
 }
 
 /* Monthly manager handover: current admin picks the new manager from the
@@ -1452,9 +2241,11 @@ function openChangeAdminModal(){
   html += '<p>' + t('admin.changeDesc') + '</p>';
   html += '<div class="mh-field"><label>' + t('admin.chooseManagerLabel') + '</label><select id="mh-change-manager-select">';
   act.forEach(function(m){
-    html += '<option value="' + m.id + '"' + (m.id === S.data.managerId ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>';
+    html += '<option value="' + m.id + '"' + (m.id === S.data.managerId ? ' selected' : '') + '>' + escapeHtml(m.name) + (m.phone ? ' \u2014 ' + escapeHtml(m.phone) : '') + '</option>';
   });
   html += '</select></div>';
+  html += '<div class="mh-field"><label>' + t('admin.confirmPhoneLabel') + '</label><input id="mh-change-manager-phone" type="text" inputmode="tel" placeholder="' + t('members.newMemberPhonePlaceholder') + '"></div>';
+  html += '<p style="font-size:11px;color:var(--ink-soft);margin:-4px 0 10px;">' + t('admin.confirmPhoneNote') + '</p>';
   html += '<div class="mh-field"><label>' + t('admin.newPinLabel2') + '</label><input id="mh-change-pin" type="password" inputmode="numeric" placeholder="5678"></div>';
   html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.confirmChangeAdmin()">' + t('admin.setBtn') + '</button>';
   html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openAdminModal()">' + t('admin.backBtn') + '</button></div>';
@@ -1464,15 +2255,43 @@ function openChangeAdminModal(){
 async function confirmChangeAdmin(){
   var val = document.getElementById('mh-change-pin').value.trim();
   var managerId = document.getElementById('mh-change-manager-select').value;
+  var confirmPhone = document.getElementById('mh-change-manager-phone').value.trim();
   if(!managerId){ showToast(t('admin.needManagerToast')); return; }
+  var mem = findMemberById(managerId);
+  if(!mem || !mem.phone){ showToast(t('admin.managerNeedsPhone')); return; }
+  if(!confirmPhone || confirmPhone !== mem.phone.trim()){ showToast(t('admin.phoneMismatch')); return; }
   if(val.length < 4){ showToast(t('onboard.pinTooShort')); return; }
   try {
-    await window.storage.set(PIN_KEY, val, true);
-    await window.storage.set(LOCAL_ADMIN_KEY, val, false);
+    await remoteSetPin(val);
+    await window.storage.set(localAdminKeyFor(S.messCode), val, false);
     S.isAdmin = true;
     S.data.managerId = managerId;
     var mem = findMemberById(managerId);
     S.data.managerHistory.push({ name: mem ? mem.name : '', date: todayStr() });
+    await saveData();
+    closeModal(); render();
+    showToast(t('admin.changedToast'));
+  } catch(e){ showToast(t('admin.problemToast')); }
+}
+
+function openChangePinOnlyModal(){
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('admin.changePinOnlyTitle') + '</h3>';
+  html += '<p>' + t('admin.changePinOnlyDesc') + '</p>';
+  html += '<div class="mh-field"><label>' + t('admin.newPinLabel2') + '</label><input id="mh-change-pin-only" type="password" inputmode="numeric" placeholder="5678"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.confirmChangePinOnly()">' + t('admin.setBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openAdminModal()">' + t('admin.backBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+
+async function confirmChangePinOnly(){
+  var val = document.getElementById('mh-change-pin-only').value.trim();
+  if(val.length < 4){ showToast(t('onboard.pinTooShort')); return; }
+  try {
+    await remoteSetPin(val);
+    await window.storage.set(localAdminKeyFor(S.messCode), val, false);
+    S.isAdmin = true;
+    logActivity('pin_change', '');
     await saveData();
     closeModal(); render();
     showToast(t('admin.changedToast'));
@@ -1497,14 +2316,85 @@ async function addBazar(){
   var item = document.getElementById('mh-bazar-item').value.trim();
   var amount = parseFloat(document.getElementById('mh-bazar-amount').value);
   if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
-  S.data.bazar.push({ id: uid(), date: date, memberId: memberId, item: item, amount: amount });
+  var photoInput = document.getElementById('mh-bazar-photo');
+  var photo = null;
+  if(photoInput && photoInput.files && photoInput.files[0]){
+    try { photo = await compressImageFile(photoInput.files[0], 700, 0.6); } catch(e){ photo = null; }
+  }
+  var entry = { id: uid(), date: date, memberId: memberId, item: item, amount: amount };
+  if(photo) entry.photo = photo;
+  S.data.bazar.push(entry);
+  var mem = findMemberById(memberId);
+  logActivity('bazar_add', (item || '') + ' \u09f3' + fmtNum(amount) + (mem ? ' \u00b7 ' + mem.name : ''));
   var ok = await saveData();
   if(ok){ render(); showToast(t('toast.bazarAdded')); }
+  else if(photo){
+    S.data.bazar.pop();
+    delete entry.photo;
+    S.data.bazar.push(entry);
+    S.data.activityLog.shift();
+    logActivity('bazar_add', (item || '') + ' \u09f3' + fmtNum(amount) + (mem ? ' \u00b7 ' + mem.name : ''));
+    var ok2 = await saveData();
+    if(ok2){ render(); showToast(t('common.photoTooBig')); }
+  }
 }
 async function deleteBazar(id){
-  S.data.bazar = S.data.bazar.filter(function(b){ return b.id !== id; });
+  var idx = -1;
+  S.data.bazar.forEach(function(b,i){ if(b.id === id) idx = i; });
+  if(idx === -1) return;
+  var removed = S.data.bazar[idx];
+  S.data.bazar.splice(idx,1);
+  logActivity('bazar_delete', (removed.item || '') + ' \u09f3' + fmtNum(removed.amount));
   var ok = await saveData();
-  if(ok){ render(); showToast(t('toast.deleted')); }
+  if(ok){
+    render();
+    showToast(t('toast.deleted'), t('common.undoBtn'), function(){
+      S.data.bazar.splice(idx,0,removed);
+      saveData().then(function(ok2){ if(ok2) render(); });
+    });
+  }
+}
+function openEditBazarModal(id){
+  var b = S.data.bazar.filter(function(x){ return x.id === id; })[0];
+  if(!b) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('common.editEntryTitle') + '</h3>';
+  html += '<div class="mh-form-grid">';
+  html += fieldInput('mh-edit-bazar-date', t('meals.date'), 'date', b.date);
+  html += '<div class="mh-field"><label>' + t('bazar.buyerLabel') + '</label><select id="mh-edit-bazar-member">';
+  activeMembers().forEach(function(m){ html += '<option value="' + m.id + '"' + (m.id === b.memberId ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>'; });
+  html += '</select></div>';
+  html += '</div>';
+  html += '<div class="mh-field"><label>' + t('bazar.itemLabel') + '</label><input id="mh-edit-bazar-item" type="text" value="' + escapeHtml(b.item || '') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('bazar.amountLabel') + '</label><input id="mh-edit-bazar-amount" type="number" min="0" step="0.01" value="' + b.amount + '"></div>';
+  html += '<div class="mh-field"><label>' + t('common.photoLabel') + '</label>';
+  if(b.photo){
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><img class="mh-thumb" src="' + b.photo + '" style="width:48px;height:48px;"><label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="mh-edit-bazar-photo-remove"> ' + t('common.removePhoto') + '</label></div>';
+  }
+  html += '<input id="mh-edit-bazar-photo" type="file" accept="image/*"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.saveEditBazar(\'' + id + '\')">' + t('common.saveBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+async function saveEditBazar(id){
+  var b = S.data.bazar.filter(function(x){ return x.id === id; })[0];
+  if(!b) return;
+  var amount = parseFloat(document.getElementById('mh-edit-bazar-amount').value);
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  b.date = document.getElementById('mh-edit-bazar-date').value || b.date;
+  b.memberId = document.getElementById('mh-edit-bazar-member').value;
+  b.item = document.getElementById('mh-edit-bazar-item').value.trim();
+  b.amount = amount;
+  var removeChk = document.getElementById('mh-edit-bazar-photo-remove');
+  if(removeChk && removeChk.checked){ delete b.photo; }
+  var photoInput = document.getElementById('mh-edit-bazar-photo');
+  if(photoInput && photoInput.files && photoInput.files[0]){
+    try { b.photo = await compressImageFile(photoInput.files[0], 700, 0.6); } catch(e){}
+  }
+  logActivity('bazar_edit', (b.item || '') + ' \u09f3' + fmtNum(b.amount));
+  var ok = await saveData();
+  closeModal();
+  if(ok){ render(); showToast(t('common.updated')); }
 }
 
 async function addExpense(){
@@ -1513,14 +2403,73 @@ async function addExpense(){
   var note = document.getElementById('mh-exp-note').value.trim();
   var amount = parseFloat(document.getElementById('mh-exp-amount').value);
   if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
-  S.data.expenses.push({ id: uid(), date: date, category: category, note: note, amount: amount });
+  var photoInput = document.getElementById('mh-exp-photo');
+  var photo = null;
+  if(photoInput && photoInput.files && photoInput.files[0]){
+    try { photo = await compressImageFile(photoInput.files[0], 700, 0.6); } catch(e){ photo = null; }
+  }
+  var entry = { id: uid(), date: date, category: category, note: note, amount: amount };
+  if(photo) entry.photo = photo;
+  S.data.expenses.push(entry);
+  logActivity('expense_add', escapeHtml(t('categories.' + category)) + ' \u09f3' + fmtNum(amount) + (note ? ' \u00b7 ' + note : ''));
   var ok = await saveData();
   if(ok){ render(); showToast(t('toast.expenseAdded')); }
+  else if(photo){
+    S.data.expenses.pop();
+    delete entry.photo;
+    S.data.expenses.push(entry);
+    S.data.activityLog.shift();
+    logActivity('expense_add', escapeHtml(t('categories.' + category)) + ' \u09f3' + fmtNum(amount) + (note ? ' \u00b7 ' + note : ''));
+    var ok2 = await saveData();
+    if(ok2){ render(); showToast(t('common.photoTooBig')); }
+  }
 }
 async function deleteExpense(id){
-  S.data.expenses = S.data.expenses.filter(function(x){ return x.id !== id; });
+  var idx = -1;
+  S.data.expenses.forEach(function(x,i){ if(x.id === id) idx = i; });
+  if(idx === -1) return;
+  var removed = S.data.expenses[idx];
+  S.data.expenses.splice(idx,1);
+  logActivity('expense_delete', escapeHtml(t('categories.' + removed.category)) + ' \u09f3' + fmtNum(removed.amount));
   var ok = await saveData();
-  if(ok){ render(); showToast(t('toast.deleted')); }
+  if(ok){
+    render();
+    showToast(t('toast.deleted'), t('common.undoBtn'), function(){
+      S.data.expenses.splice(idx,0,removed);
+      saveData().then(function(ok2){ if(ok2) render(); });
+    });
+  }
+}
+function openEditExpenseModal(id){
+  var x = S.data.expenses.filter(function(e){ return e.id === id; })[0];
+  if(!x) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('common.editEntryTitle') + '</h3>';
+  html += '<div class="mh-form-grid">';
+  html += fieldInput('mh-edit-exp-date', t('meals.date'), 'date', x.date);
+  html += '<div class="mh-field"><label>' + t('expenses.categoryLabel') + '</label><select id="mh-edit-exp-category">';
+  Object.keys(EXPENSE_CATEGORIES).forEach(function(key){ html += '<option value="' + key + '"' + (key === x.category ? ' selected' : '') + '>' + EXPENSE_CATEGORIES[key].icon + ' ' + escapeHtml(t('categories.' + key)) + '</option>'; });
+  html += '</select></div>';
+  html += '</div>';
+  html += '<div class="mh-field"><label>' + t('expenses.noteLabel') + '</label><input id="mh-edit-exp-note" type="text" value="' + escapeHtml(x.note || '') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('expenses.amountLabel') + '</label><input id="mh-edit-exp-amount" type="number" min="0" step="0.01" value="' + x.amount + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.saveEditExpense(\'' + id + '\')">' + t('common.saveBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+async function saveEditExpense(id){
+  var x = S.data.expenses.filter(function(e){ return e.id === id; })[0];
+  if(!x) return;
+  var amount = parseFloat(document.getElementById('mh-edit-exp-amount').value);
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  x.date = document.getElementById('mh-edit-exp-date').value || x.date;
+  x.category = document.getElementById('mh-edit-exp-category').value;
+  x.note = document.getElementById('mh-edit-exp-note').value.trim();
+  x.amount = amount;
+  logActivity('expense_edit', escapeHtml(t('categories.' + x.category)) + ' \u09f3' + fmtNum(x.amount) + (x.note ? ' \u00b7 ' + x.note : ''));
+  var ok = await saveData();
+  closeModal();
+  if(ok){ render(); showToast(t('common.updated')); }
 }
 
 async function addDeposit(){
@@ -1530,21 +2479,72 @@ async function addDeposit(){
   var note = document.getElementById('mh-dep-note').value.trim();
   if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
   S.data.deposits.push({ id: uid(), memberId: memberId, date: date, amount: amount, note: note });
+  var mem = findMemberById(memberId);
+  logActivity('deposit_add', (mem ? mem.name : '') + ' \u09f3' + fmtNum(amount));
   var ok = await saveData();
   if(ok){ render(); showToast(t('toast.depositAdded')); }
 }
 async function deleteDeposit(id){
-  S.data.deposits = S.data.deposits.filter(function(d){ return d.id !== id; });
+  var idx = -1;
+  S.data.deposits.forEach(function(d,i){ if(d.id === id) idx = i; });
+  if(idx === -1) return;
+  var removed = S.data.deposits[idx];
+  var mem = findMemberById(removed.memberId);
+  S.data.deposits.splice(idx,1);
+  logActivity('deposit_delete', (mem ? mem.name : '') + ' \u09f3' + fmtNum(removed.amount));
   var ok = await saveData();
-  if(ok){ render(); showToast(t('toast.deleted')); }
+  if(ok){
+    render();
+    showToast(t('toast.deleted'), t('common.undoBtn'), function(){
+      S.data.deposits.splice(idx,0,removed);
+      saveData().then(function(ok2){ if(ok2) render(); });
+    });
+  }
+}
+function openEditDepositModal(id){
+  var d = S.data.deposits.filter(function(x){ return x.id === id; })[0];
+  if(!d) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('common.editEntryTitle') + '</h3>';
+  html += '<div class="mh-form-grid">';
+  html += '<div class="mh-field"><label>' + t('deposits.memberLabel') + '</label><select id="mh-edit-dep-member">';
+  activeMembers().forEach(function(m){ html += '<option value="' + m.id + '"' + (m.id === d.memberId ? ' selected' : '') + '>' + escapeHtml(m.name) + '</option>'; });
+  html += '</select></div>';
+  html += fieldInput('mh-edit-dep-date', t('deposits.dateLabel'), 'date', d.date);
+  html += '</div>';
+  html += '<div class="mh-field"><label>' + t('deposits.amountLabel') + '</label><input id="mh-edit-dep-amount" type="number" min="0" step="0.01" value="' + d.amount + '"></div>';
+  html += '<div class="mh-field"><label>' + t('deposits.noteLabel') + '</label><input id="mh-edit-dep-note" type="text" value="' + escapeHtml(d.note || '') + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.saveEditDeposit(\'' + id + '\')">' + t('common.saveBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+async function saveEditDeposit(id){
+  var d = S.data.deposits.filter(function(x){ return x.id === id; })[0];
+  if(!d) return;
+  var amount = parseFloat(document.getElementById('mh-edit-dep-amount').value);
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  d.memberId = document.getElementById('mh-edit-dep-member').value;
+  d.date = document.getElementById('mh-edit-dep-date').value || d.date;
+  d.amount = amount;
+  d.note = document.getElementById('mh-edit-dep-note').value.trim();
+  var mem = findMemberById(d.memberId);
+  logActivity('deposit_edit', (mem ? mem.name : '') + ' \u09f3' + fmtNum(d.amount));
+  var ok = await saveData();
+  closeModal();
+  if(ok){ render(); showToast(t('common.updated')); }
 }
 
 async function addMember(){
   var input = document.getElementById('mh-new-member');
   var name = input.value.trim();
   if(!name){ showToast(t('toast.nameRequired')); return; }
+  var phoneEl = document.getElementById('mh-new-member-phone');
+  var passEl = document.getElementById('mh-new-member-password');
+  var phone = phoneEl ? phoneEl.value.trim() : '';
+  var password = passEl ? passEl.value.trim() : '';
   var color = MEMBER_COLORS[S.data.members.length % MEMBER_COLORS.length];
-  S.data.members.push({ id: uid(), name: name, color: color, active: true });
+  S.data.members.push({ id: uid(), name: name, color: color, active: true, phone: phone, password: password });
+  logActivity('member_add', name);
   var ok = await saveData();
   if(ok){ render(); showToast(name + t('toast.memberAddedSuffix')); }
 }
@@ -1553,14 +2553,42 @@ async function archiveMember(id){
   var name = mem ? mem.name : '';
   if(!window.confirm(name + t('members.archiveConfirm'))) return;
   S.data.members.forEach(function(m){ if(m.id === id) m.active = false; });
+  logActivity('member_archive', name);
   var ok = await saveData();
   if(ok){ render(); showToast(name + t('toast.memberArchivedSuffix')); }
 }
 async function reactivateMember(id){
   var mem = findMemberById(id);
   S.data.members.forEach(function(m){ if(m.id === id) m.active = true; });
+  logActivity('member_reactivate', mem ? mem.name : '');
   var ok = await saveData();
   if(ok){ render(); showToast((mem ? mem.name : '') + t('toast.memberReactivatedSuffix')); }
+}
+function openEditMemberModal(id){
+  var mem = findMemberById(id);
+  if(!mem) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('common.editMemberTitle') + '</h3>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberLabel') + '</label><input id="mh-edit-member-name" type="text" value="' + escapeHtml(mem.name) + '"></div>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberPhoneLabel') + '</label><input id="mh-edit-member-phone" type="text" inputmode="tel" value="' + escapeHtml(mem.phone || '') + '" placeholder="' + t('members.newMemberPhonePlaceholder') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('members.newMemberPasswordLabel') + '</label><input id="mh-edit-member-password" type="text" value="' + escapeHtml(mem.password || '') + '" placeholder="' + t('members.newMemberPasswordPlaceholder') + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.saveEditMember(\'' + id + '\')">' + t('common.saveBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+async function saveEditMember(id){
+  var mem = findMemberById(id);
+  if(!mem) return;
+  var name = document.getElementById('mh-edit-member-name').value.trim();
+  if(!name){ showToast(t('toast.nameRequired')); return; }
+  var phone = document.getElementById('mh-edit-member-phone').value.trim();
+  var password = document.getElementById('mh-edit-member-password').value.trim();
+  var oldName = mem.name;
+  mem.name = name; mem.phone = phone; mem.password = password;
+  logActivity('member_edit', oldName + ' \u2192 ' + name);
+  var ok = await saveData();
+  closeModal();
+  if(ok){ render(); showToast(t('common.updated')); }
 }
 async function updateMessName(){
   var input = document.getElementById('mh-mess-name');
@@ -1583,11 +2611,54 @@ async function setLang(lang){
   render();
 }
 
+/* ---------------- MEAL REMINDER (local, tab must stay open) ---------------- */
+async function saveReminderSettings(){
+  try { await window.storage.set(REMINDER_KEY, JSON.stringify(S.reminder), false); } catch(e){}
+}
+async function toggleReminder(checkbox){
+  if(checkbox.checked){
+    if(!('Notification' in window)){ showToast(t('settings.reminderPermissionDenied')); checkbox.checked = false; return; }
+    var perm = Notification.permission;
+    if(perm !== 'granted'){
+      perm = await Notification.requestPermission();
+    }
+    if(perm !== 'granted'){
+      showToast(t('settings.reminderPermissionDenied'));
+      checkbox.checked = false;
+      return;
+    }
+    S.reminder.enabled = true;
+    await saveReminderSettings();
+    showToast(t('settings.reminderOnToast'));
+  } else {
+    S.reminder.enabled = false;
+    await saveReminderSettings();
+    showToast(t('settings.reminderOffToast'));
+  }
+  render();
+}
+async function setReminderTime(input){
+  S.reminder.time = input.value || '20:00';
+  await saveReminderSettings();
+}
+function checkReminder(){
+  if(!S.reminder || !S.reminder.enabled) return;
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  var now = new Date();
+  var hh = pad2(now.getHours()), mm = pad2(now.getMinutes());
+  var today = todayStr();
+  if((hh + ':' + mm) === S.reminder.time && S.reminder.lastFiredDate !== today){
+    try { new Notification(t('settings.reminderNotifTitle'), { body: t('settings.reminderNotifBody') }); } catch(e){}
+    S.reminder.lastFiredDate = today;
+    saveReminderSettings();
+  }
+}
+
 /* ---------------- PRINT REPORT ---------------- */
 function buildPrintReport(){
   var c = calcMonth(S.ym);
   var mgr = findMemberById(S.data.managerId);
-  var html = '<div class="mh-print-report">';
+  var html = '<div class="mh-print-report" id="mh-print-page-summary">';
   html += '<h1>' + escapeHtml(S.data.messName || t('app.defaultName')) + '</h1>';
   html += '<div class="mh-print-meta">' + t('print.title') + ' &mdash; ' + ymLabel(S.ym) + '<br>';
   html += t('print.manager') + ': ' + escapeHtml(mgr ? mgr.name : t('manager.none')) + ' &middot; ' + t('print.generated') + ': ' + todayStr() + '</div>';
@@ -1627,13 +2698,166 @@ function buildPrintReport(){
     html += '</tbody></table>';
   }
 
+  html += '<div class="mh-print-signature-row"><div class="mh-print-signature-box">';
+  html += '<div class="mh-print-signature-line">&nbsp;</div>';
+  html += '<div class="mh-print-signature-label">' + t('print.signatureManager') + ' (' + escapeHtml(mgr ? mgr.name : t('manager.none')) + ')</div>';
+  html += '<div class="mh-print-signature-label" style="margin-top:18px;">' + t('print.signatureDate') + ': ___________</div>';
+  html += '</div></div>';
+
   html += '</div>';
+
+  html += buildPrintMealChart();
+
   var container = document.getElementById('mh-print-report');
   if(container) container.innerHTML = html;
 }
+
+function buildPrintMealChart(){
+  var members = membersForMonth(S.ym);
+  var days = daysInMonth(S.ym);
+  var weekdays = S.lang === 'en' ? EN_WEEKDAYS : BN_WEEKDAYS;
+  var html = '<div class="mh-print-report mh-print-meal-page" id="mh-print-page-mealchart">';
+  html += '<div class="mh-print-meal-title">' + escapeHtml(S.data.messName || t('app.defaultName')) + ' &mdash; ' + t('print.mealChartTitle') + ' &middot; ' + ymLabel(S.ym) + '</div>';
+  html += '<table class="mh-print-meal-table"><thead><tr><th>' + t('meals.date') + '</th>';
+  members.forEach(function(m){ html += '<th>' + escapeHtml(m.name) + (m.active === false ? ' *' : '') + '</th>'; });
+  html += '<th>' + t('meals.total') + '</th></tr></thead><tbody>';
+
+  var colTotals = {};
+  members.forEach(function(m){ colTotals[m.id] = 0; });
+  var grandTotal = 0;
+
+  for(var d=1; d<=days; d++){
+    var date = S.ym + '-' + pad2(d);
+    var dow = new Date(S.ym.split('-')[0], parseInt(S.ym.split('-')[1],10)-1, d).getDay();
+    var row = S.data.meals[date] || {};
+    var rowTotal = 0;
+    html += '<tr><td>' + d + ' ' + weekdays[dow] + '</td>';
+    members.forEach(function(m){
+      var val = row[m.id] !== undefined ? row[m.id] : '';
+      rowTotal += (parseFloat(val) || 0);
+      colTotals[m.id] += (parseFloat(val) || 0);
+      html += '<td>' + (val === '' ? '&mdash;' : fmtInt(val)) + '</td>';
+    });
+    grandTotal += rowTotal;
+    html += '<td>' + fmtInt(rowTotal) + '</td></tr>';
+  }
+
+  html += '</tbody><tfoot><tr><td>' + t('meals.totalMeals') + '</td>';
+  members.forEach(function(m){ html += '<td>' + fmtInt(colTotals[m.id]) + '</td>'; });
+  html += '<td>' + fmtInt(grandTotal) + '</td></tr></tfoot>';
+  html += '</table></div>';
+  return html;
+}
+
+async function downloadReportPDF(){
+  var btn = document.getElementById('mh-pdf-btn');
+  var originalLabel = btn ? btn.textContent : '';
+  try {
+    if(typeof html2canvas === 'undefined' || !window.jspdf){
+      alert(t('settings.pdfError'));
+      return;
+    }
+    if(btn){ btn.textContent = t('settings.pdfGenerating'); btn.disabled = true; }
+    buildPrintReport();
+    var container = document.getElementById('mh-print-report');
+    var summaryEl = document.getElementById('mh-print-page-summary');
+    var mealEl = document.getElementById('mh-print-page-mealchart');
+    if(!container || !summaryEl) return;
+
+    var prevCss = container.getAttribute('style') || '';
+    container.style.cssText = 'display:block !important; position:fixed; left:-99999px; top:0; z-index:-1; background:#fff;';
+    summaryEl.style.width = '794px';
+    if(mealEl) mealEl.style.width = '794px';
+
+    var jsPDFCtor = window.jspdf.jsPDF;
+    var pdf = new jsPDFCtor({ unit:'pt', format:'a4', orientation:'portrait' });
+
+    function addCanvasPage(canvas, isFirst, orientation){
+      if(!isFirst) pdf.addPage('a4', orientation);
+      var pageW = pdf.internal.pageSize.getWidth();
+      var pageH = pdf.internal.pageSize.getHeight();
+      var scale = Math.min(pageW / canvas.width, pageH / canvas.height);
+      var w = canvas.width * scale, h = canvas.height * scale;
+      var x = (pageW - w) / 2, y = (pageH - h) / 2;
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, w, h);
+    }
+
+    var canvas1 = await html2canvas(summaryEl, { scale:2, backgroundColor:'#ffffff' });
+    addCanvasPage(canvas1, true, 'portrait');
+
+    if(mealEl){
+      var canvas2 = await html2canvas(mealEl, { scale:2, backgroundColor:'#ffffff' });
+      addCanvasPage(canvas2, false, 'portrait');
+    }
+
+    container.setAttribute('style', prevCss);
+    summaryEl.style.width = '';
+    if(mealEl) mealEl.style.width = '';
+
+    var fname = (S.data.messName || t('app.defaultName')) + '-' + S.ym + '.pdf';
+    pdf.save(fname);
+  } catch(err){
+    alert(t('settings.pdfError'));
+  } finally {
+    if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
+  }
+}
 function printReport(){
   buildPrintReport();
+  var report = document.getElementById('mh-print-report');
+  if(!report){ window.print(); return; }
+  var placeholder = document.createComment('mh-print-report-slot');
+  var originalParent = report.parentNode;
+  originalParent.insertBefore(placeholder, report);
+  document.body.appendChild(report);
+  var restored = false;
+  function restore(){
+    if(restored) return;
+    restored = true;
+    if(report.parentNode === document.body){
+      if(placeholder.parentNode){
+        placeholder.parentNode.insertBefore(report, placeholder);
+        placeholder.parentNode.removeChild(placeholder);
+      } else {
+        document.body.removeChild(report);
+      }
+    }
+    window.removeEventListener('afterprint', restore);
+  }
+  window.addEventListener('afterprint', restore);
   setTimeout(function(){ window.print(); }, 60);
+  setTimeout(restore, 4000);
+}
+async function copyMessLink(){
+  var link = messShareLink();
+  try {
+    if(navigator.share){
+      await navigator.share({ title: S.data.messName || t('app.defaultName'), url: link });
+      return;
+    }
+  } catch(e){ if(e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(link); showToast(t('settings.linkCopied')); }
+  catch(e){ showToast(t('toast.copyFailed')); }
+}
+
+async function shareReport(){
+  var c = calcMonth(S.ym);
+  var lines = [];
+  lines.push((S.data.messName || t('app.defaultName')) + ' \u2014 ' + ymLabel(S.ym));
+  lines.push(t('print.totalsRow') + ': \u09f3' + fmtNum(c.totalCost + c.totalOther));
+  lines.push(t('dashboard.statDeposit') + ': \u09f3' + fmtNum(c.totalDeposit));
+  lines.push('');
+  c.members.forEach(function(m){
+    var pm = c.perMember[m.id];
+    var sign = pm.balance >= 0 ? '+' : '-';
+    lines.push(m.name + ': ' + sign + '\u09f3' + fmtNum(Math.abs(pm.balance)) + ' (' + (pm.balance >= 0 ? t('dashboard.credit') : t('dashboard.due')) + ')');
+  });
+  var text = lines.join('\n');
+  if(navigator.share){
+    try { await navigator.share({ title: S.data.messName || t('app.defaultName'), text: text }); return; } catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(text); showToast(t('common.shareFallback')); }
+  catch(e){ showToast(t('toast.copyFailed')); }
 }
 
 /* ---------------- BACKUP / RESTORE ---------------- */
@@ -1720,6 +2944,36 @@ async function applyImport(){
 }
 
 function setTab(tb){ S.tab = tb; render(); }
+function setMealsView(v){ S.mealsView = v; render(); }
+function setMealsEntryDate(d){ S.mealsEntryDate = d; render(); }
+
+var TAB_ORDER = ['dashboard','meals','bazar','expenses','deposits','members','log','settings'];
+function initSwipeNav(){
+  var shell = document.getElementById('mh-shell');
+  if(!shell) return;
+  var startX = null, startY = null;
+  shell.addEventListener('touchstart', function(e){
+    if(e.touches.length !== 1) return;
+    var target = e.target;
+    if(target.closest && (target.closest('#mh-bottom-nav') || target.closest('.mh-table-wrap') || target.closest('input') || target.closest('select') || target.closest('textarea'))){
+      startX = null; startY = null; return;
+    }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  shell.addEventListener('touchend', function(e){
+    if(startX === null) return;
+    var touch = e.changedTouches[0];
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    startX = null; startY = null;
+    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    var idx = TAB_ORDER.indexOf(S.tab);
+    if(idx === -1) return;
+    if(dx < 0 && idx < TAB_ORDER.length - 1){ setTab(TAB_ORDER[idx + 1]); }
+    else if(dx > 0 && idx > 0){ setTab(TAB_ORDER[idx - 1]); }
+  }, { passive: true });
+}
 function shiftMonth(delta){
   var p = S.ym.split('-'); var y = parseInt(p[0],10), m = parseInt(p[1],10);
   m += delta;
@@ -1729,29 +2983,63 @@ function shiftMonth(delta){
 }
 
 function attachGlobalHandlers(){
-  document.querySelectorAll('.mh-meal-input').forEach(function(el){
-    el.classList.add('mh-live-guard');
-  });
+  function wireEnterAdvance(selector){
+    var inputs = Array.prototype.slice.call(document.querySelectorAll(selector));
+    inputs.forEach(function(el, idx){
+      el.classList.add('mh-live-guard');
+      el.setAttribute('tabindex', String(idx + 1));
+      el.onkeydown = function(e){
+        if(e.key === 'Enter' || e.key === 'Tab'){
+          e.preventDefault();
+          var next = inputs[idx + 1];
+          if(next){
+            mhPendingFocus = { date: next.getAttribute('data-date'), member: next.getAttribute('data-member') };
+            next.focus(); if(next.select) next.select();
+          } else {
+            mhPendingFocus = null;
+            el.blur();
+          }
+        }
+      };
+    });
+  }
+  wireEnterAdvance('.mh-meal-input');
+  wireEnterAdvance('input.mh-meal-entry-input');
 }
 
 /* ---------------- INIT ---------------- */
 window.MH = {
   openAdminModal: openAdminModal, closeModal: closeModal, setupPin: setupPin, checkPin: checkPin, logoutAdmin: logoutAdmin,
   openChangeAdminModal: openChangeAdminModal, confirmChangeAdmin: confirmChangeAdmin,
+  openForgotPinModal: openForgotPinModal, confirmForgotPin: confirmForgotPin,
   updateMeal: updateMeal, addBazar: addBazar, deleteBazar: deleteBazar, addExpense: addExpense, deleteExpense: deleteExpense,
   addDeposit: addDeposit, deleteDeposit: deleteDeposit,
+  openEditBazarModal: openEditBazarModal, saveEditBazar: saveEditBazar,
+  openEditExpenseModal: openEditExpenseModal, saveEditExpense: saveEditExpense,
+  openEditDepositModal: openEditDepositModal, saveEditDeposit: saveEditDeposit,
+  openEditMemberModal: openEditMemberModal, saveEditMember: saveEditMember,
   addMember: addMember, archiveMember: archiveMember, reactivateMember: reactivateMember, updateMessName: updateMessName,
-  setTab: setTab, shiftMonth: shiftMonth, setTheme: setTheme, setLang: setLang, printReport: printReport,
+  setTab: setTab, setMealsView: setMealsView, setMealsEntryDate: setMealsEntryDate, shiftMonth: shiftMonth, setTheme: setTheme, setLang: setLang, printReport: printReport,
+  downloadReportPDF: downloadReportPDF,
+  openLoginModal: openLoginModal, submitLogin: submitLogin, logoutIdentity: logoutIdentity,
+  openMyProfileModal: openMyProfileModal, saveMyProfile: saveMyProfile,
+  openChangePinOnlyModal: openChangePinOnlyModal, confirmChangePinOnly: confirmChangePinOnly, cancelAdminModal: cancelAdminModal,
+  shareReport: shareReport, openEntryPhoto: openEntryPhoto,
+  toggleReminder: toggleReminder, setReminderTime: setReminderTime,
   downloadData: downloadData, copyData: copyData, handleUploadFile: handleUploadFile, handleUploadPaste: handleUploadPaste,
   applyImport: applyImport,
-  syncOnboardName: syncOnboardName, addOnboardMember: addOnboardMember, removeOnboardMember: removeOnboardMember, finishOnboarding: finishOnboarding
+  syncOnboardName: syncOnboardName, addOnboardMember: addOnboardMember, removeOnboardMember: removeOnboardMember, finishOnboarding: finishOnboarding,
+  renderWelcome: renderWelcome, renderJoinPrompt: renderJoinPrompt, startCreateMess: startCreateMess, confirmJoinMess: confirmJoinMess,
+  copyMessLink: copyMessLink
 };
 
 (async function init(){
-  await loadAll();
-  render();
-  setInterval(pollForUpdates, 7000);
-  setInterval(updateSyncLabel, 5000);
+  S.messCode = getUrlMessCode();
+  if(S.messCode){
+    await startApp();
+  } else {
+    renderWelcome();
+  }
 })();
 
 })();
