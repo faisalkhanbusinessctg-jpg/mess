@@ -174,16 +174,33 @@ body {
   opacity: 0.85;
 }
 #mh-bottom-nav .mh-nav-item {
-  flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 2px;
-  background:none; border:none; color: rgba(217,164,65,0.5); font-size: 9.5px; font-weight:700; cursor:pointer;
-  padding: 6px 1px; border-radius: 11px; min-width:0;
+  flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 3px;
+  background:none; border:none; color: rgba(217,164,65,0.55); font-size: 9.5px; font-weight:700; cursor:pointer;
+  padding: 7px 1px 6px; border-radius: 13px; min-width:0; position:relative;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   transition: color 0.15s ease, background 0.15s ease, transform 0.12s ease;
 }
-#mh-bottom-nav .mh-nav-icon { font-size: 19px; line-height:1; opacity:0.7; }
-#mh-bottom-nav .mh-nav-label { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
-#mh-bottom-nav .mh-nav-item.active { color: var(--gold); background: rgba(217,164,65,0.16); }
-#mh-bottom-nav .mh-nav-item.active .mh-nav-icon { opacity:1; }
+#mh-bottom-nav .mh-nav-icon-wrap {
+  display:flex; align-items:center; justify-content:center;
+  width: 30px; height: 30px; border-radius: 50%;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+#mh-bottom-nav .mh-nav-icon {
+  font-size: 18px; line-height:1; opacity:0.78;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+  transition: opacity 0.15s ease, filter 0.15s ease, transform 0.15s ease;
+}
+#mh-bottom-nav .mh-nav-label { max-width:100%; overflow:hidden; text-overflow:ellipsis; letter-spacing:0.15px; }
+#mh-bottom-nav .mh-nav-item.active { color: var(--gold); }
+#mh-bottom-nav .mh-nav-item.active .mh-nav-icon-wrap {
+  background: radial-gradient(circle, rgba(217,164,65,0.35) 0%, rgba(217,164,65,0.16) 65%, transparent 100%);
+  box-shadow: 0 2px 8px rgba(217,164,65,0.35), inset 0 0 0 1px rgba(217,164,65,0.4);
+  transform: translateY(-1px);
+}
+#mh-bottom-nav .mh-nav-item.active .mh-nav-icon {
+  opacity:1; transform: scale(1.14);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(217,164,65,0.5));
+}
 #mh-bottom-nav .mh-nav-item:active { transform: scale(0.92); }
 #mh-tab-content { padding-bottom: 86px; }
 
@@ -465,6 +482,7 @@ body {
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* ---------------- LOCAL STORAGE POLYFILL ----------------
    এই অ্যাপটি মূলত Claude.ai-এর window.storage API এর জন্য বানানো হয়েছিল,
@@ -553,10 +571,11 @@ var T = {
       statMeals:'মোট মিল', statRate:'প্রতি মিল রেট', statFood:'মোট বাজার খরচ', statOther:'ভাড়া/বিল/অন্যান্য',
       statShare:'মাথাপিছু ভাগ', statDeposit:'মোট জমা', membersSection:'সদস্যদের হিসাব',
       credit:'জমা আছে', due:'বাকি আছে', archivedBadge:'সাবেক সদস্য', mealsWord:'মিল', totalCostWord:'মোট খরচ',
-      breakdownFood:'খাবার', breakdownOther:'অন্যান্য'
+      breakdownFood:'খাবার', breakdownOther:'অন্যান্য', refundBtn:'💸 ফেরত দিন', refundModalTitle:'টাকা ফেরত দিন', refundModalDesc:'উদ্বৃত্ত জমা থেকে ফেরত দিচ্ছেন'
     },
     meals: { title:'দৈনিক মিল এন্ট্রি', viewBanner:'👀 শুধু অ্যাডমিন মিল সংখ্যা পরিবর্তন করতে পারবেন।', date:'তারিখ', total:'মোট', totalMeals:'মোট মিল', archivedNote:'* সাবেক সদস্য — শুধু এই মাসের আগের হিসাব দেখানো হচ্ছে',
-      viewEntryTab:'✍️ মিল দিন', viewChartTab:'📋 চার্ট দেখুন', entryDayTotal:'ওইদিনের মোট মিল', entryNoMembers:'এই তারিখে কোনো সক্রিয় সদস্য নেই', entryOutsideMonth:'* এই তারিখটি বর্তমানে খোলা মাসের বাইরে, তবু এন্ট্রি সংরক্ষণ হবে' },
+      viewEntryTab:'✍️ মিল দিন', viewChartTab:'📋 চার্ট দেখুন', entryDayTotal:'ওইদিনের মোট মিল', entryNoMembers:'এই তারিখে কোনো সক্রিয় সদস্য নেই', entryOutsideMonth:'* এই তারিখটি বর্তমানে খোলা মাসের বাইরে, তবু এন্ট্রি সংরক্ষণ হবে',
+      bulkLabel:'সবাইকে একসাথে দিন', bulkPlaceholder:'যেমনঃ 1', bulkApplyBtn:'প্রয়োগ করুন', bulkConfirmA:'আজকের সবার মিল ', bulkConfirmB:' করে বসিয়ে দিতে চান? আগের এন্ট্রি থাকলে ওভাররাইট হয়ে যাবে।', bulkAppliedToast:'সবার মিল বসানো হয়েছে' },
     bazar: { title:'বাজার খরচ', totalLabel:'মোট', buyerLabel:'কে বাজার করেছে', itemLabel:'কী কেনা হয়েছে', itemPlaceholder:'যেমনঃ চাল, তেল, সবজি', amountLabel:'টাকার পরিমাণ', addBtn:'+ বাজার যোগ করুন', empty:'এই মাসে এখনও কোনো বাজার যোগ করা হয়নি', unknown:'অজানা' },
     expenses: { title:'বাসা ভাড়া, বিল ও অন্যান্য খরচ', infoBanner1:'ℹ️ এই খরচগুলো মিলের সংখ্যা দিয়ে নয়, সক্রিয় সদস্য সংখ্যা দিয়ে (মাথাপিছু) সমান ভাগে ভাগ হবে। এই মাসে মাথাপিছু ভাগ ', infoBanner2:' (' , infoBanner3: ' জন সদস্য)।', categoryLabel:'খরচের ধরন', noteLabel:'বিবরণ (ঐচ্ছিক)', notePlaceholder:'যেমনঃ জুলাই মাসের ভাড়া', amountLabel:'টাকার পরিমাণ', addBtn:'+ খরচ যোগ করুন', empty:'এই মাসে এখনও কোনো অন্যান্য খরচ যোগ করা হয়নি' },
     categories: { rent:'বাসা ভাড়া', electricity:'বিদ্যুৎ বিল', water:'পানি/গ্যাস বিল', other:'অন্যান্য খরচ' },
@@ -573,6 +592,8 @@ var T = {
       loginBtn:'🔒 অ্যাডমিন হিসেবে প্রবেশ করুন', logoutBtn:'ভিউ মোডে ফিরে যান',
       reportTitle:'মাসিক রিপোর্ট', reportDesc:'উপরে যে মাস নির্বাচন করা আছে, সেই মাসের রিপোর্ট তৈরি হবে।', printBtn:'🖨️ এই মাসের রিপোর্ট প্রিন্ট করুন', pdfBtn:'📄 PDF ডাউনলোড করুন', pdfGenerating:'⏳ PDF তৈরি হচ্ছে...', pdfError:'PDF তৈরি করা যায়নি, আবার চেষ্টা করুন।',
       linkTitle:'মেসের লিংক শেয়ার করুন', linkDesc:'এই লিংক যার কাছে থাকবে সে-ই এই মেসের হিসাব লাইভ দেখতে পারবে।', linkCodeLabel:'মেস কোড', copyLinkBtn:'🔗 লিংক কপি করুন', linkCopied:'লিংক কপি হয়েছে',
+      showQrBtn:'📱 QR কোড দেখান', qrTitle:'QR কোড', qrDesc:'এই QR কোড ফোন দিয়ে স্ক্যান করলে সরাসরি এই মেসের লিংকে চলে যাবে।', qrError:'QR কোড তৈরি করা যায়নি, ইন্টারনেট চেক করুন',
+      galleryTitle:'রিসিটের ছবি', galleryDesc:'বাজার ও অন্যান্য খরচের সব রিসিটের ছবি একসাথে দেখুন।', galleryBtn:'🖼️ গ্যালারি দেখুন', galleryEmpty:'এখনও কোনো রিসিটের ছবি যোগ করা হয়নি', galleryBackBtn:'← গ্যালারিতে ফিরুন',
       logoutTitle:'অন্য কিছু', logoutBtn:'🚪 এই মেস থেকে বের হয়ে যান', logoutDesc:'এই ডিভাইস থেকে বের হয়ে গেলে নতুন মেস তৈরি বা অন্য কোনো মেসে কোড দিয়ে যোগ দিতে পারবেন। এই মেসের লিংক/কোড থাকলে আবার ফিরেও আসতে পারবেন।', logoutConfirm:'আপনি কি এই মেস থেকে বের হয়ে যেতে চান?',
       reminderTitle:'মিল এন্ট্রি রিমাইন্ডার', reminderDesc:'প্রতিদিন নির্দিষ্ট সময়ে মিল এন্ট্রি দেওয়ার মনে করিয়ে দেবে। এই রিমাইন্ডার শুধু এই ব্রাউজারে এবং এই পেজ/ট্যাব খোলা থাকা অবস্থায়ই কাজ করবে, ব্রাউজার বন্ধ থাকলে নোটিফিকেশন আসবে না।',
       reminderEnable:'রিমাইন্ডার চালু করুন', reminderTimeLabel:'সময়', reminderOnToast:'রিমাইন্ডার চালু হয়েছে', reminderOffToast:'রিমাইন্ডার বন্ধ হয়েছে', reminderPermissionDenied:'নোটিফিকেশন অনুমতি দেওয়া হয়নি, ব্রাউজার সেটিংস থেকে অনুমতি দিন', reminderNotifTitle:'মেস হিসাব', reminderNotifBody:'আজকের মিল এন্ট্রি দেওয়া হয়েছে কি? এখনই দিয়ে দিন।',
@@ -649,10 +670,12 @@ var T = {
       statMeals:'Total meals', statRate:'Rate per meal', statFood:'Total grocery cost', statOther:'Rent/bills/other',
       statShare:'Per-head share', statDeposit:'Total deposits', membersSection:'Member accounts',
       credit:'In credit', due:'Owes', archivedBadge:'Former member', mealsWord:'meals', totalCostWord:'Total cost',
+      refundBtn:'💸 Refund', refundModalTitle:'Give a refund', refundModalDesc:'Refunding from surplus balance',
       breakdownFood:'Food', breakdownOther:'Other'
     },
     meals: { title:'Daily meal entry', viewBanner:'👀 Only the admin can change meal counts.', date:'Date', total:'Total', totalMeals:'Total meals', archivedNote:'* Former member — showing only this months earlier record',
-      viewEntryTab:'✍️ Enter meals', viewChartTab:'📋 View chart', entryDayTotal:'Total meals that day', entryNoMembers:'No active members for this date', entryOutsideMonth:'* This date is outside the month currently open, but the entry will still be saved' },
+      viewEntryTab:'✍️ Enter meals', viewChartTab:'📋 View chart', entryDayTotal:'Total meals that day', entryNoMembers:'No active members for this date', entryOutsideMonth:'* This date is outside the month currently open, but the entry will still be saved',
+      bulkLabel:'Set the same for everyone', bulkPlaceholder:'e.g. 1', bulkApplyBtn:'Apply', bulkConfirmA:'Set everyone\'s meals today to ', bulkConfirmB:'? Existing entries will be overwritten.', bulkAppliedToast:'Meals set for everyone' },
     bazar: { title:'Grocery expenses', totalLabel:'Total', buyerLabel:'Bought by', itemLabel:'What was bought', itemPlaceholder:'e.g. rice, oil, vegetables', amountLabel:'Amount', addBtn:'+ Add grocery entry', empty:'No grocery entries yet this month', unknown:'Unknown' },
     expenses: { title:'Rent, bills and other expenses', infoBanner1:'ℹ️ These costs split equally per active member (per head), not by meal count. This months per-head share is ', infoBanner2:' (', infoBanner3: ' members).', categoryLabel:'Expense type', noteLabel:'Note (optional)', notePlaceholder:'e.g. July rent', amountLabel:'Amount', addBtn:'+ Add expense', empty:'No other expenses added yet this month' },
     categories: { rent:'Rent', electricity:'Electricity bill', water:'Water/gas bill', other:'Other expense' },
@@ -669,6 +692,8 @@ var T = {
       loginBtn:'🔒 Log in as admin', logoutBtn:'Back to view mode',
       reportTitle:'Monthly report', reportDesc:'The report is generated for the month selected above.', printBtn:'🖨️ Print this months report', pdfBtn:'📄 Download PDF', pdfGenerating:'⏳ Generating PDF...', pdfError:'Could not generate the PDF, please try again.',
       linkTitle:'Share the mess link', linkDesc:'Anyone with this link can live-view this mess ledger.', linkCodeLabel:'Mess code', copyLinkBtn:'🔗 Copy link', linkCopied:'Link copied',
+      showQrBtn:'📱 Show QR code', qrTitle:'QR code', qrDesc:'Scanning this QR code with a phone opens this mess link directly.', qrError:'Could not generate QR code, check your internet',
+      galleryTitle:'Receipt photos', galleryDesc:'View all receipt photos from groceries and other expenses in one place.', galleryBtn:'🖼️ View gallery', galleryEmpty:'No receipt photos added yet', galleryBackBtn:'← Back to gallery',
       logoutTitle:'Other', logoutBtn:'🚪 Log out of this mess', logoutDesc:'Logging out on this device lets you create a new mess or join another with a code. You can always come back with this mess link/code.', logoutConfirm:'Are you sure you want to log out of this mess?',
       reminderTitle:'Meal entry reminder', reminderDesc:'Reminds you every day at a set time to enter meals. This only works while this browser tab stays open; it will not notify you if the browser is closed.',
       reminderEnable:'Turn on reminder', reminderTimeLabel:'Time', reminderOnToast:'Reminder turned on', reminderOffToast:'Reminder turned off', reminderPermissionDenied:'Notification permission was not granted, allow it from browser settings', reminderNotifTitle:'Mess Hishab', reminderNotifBody:'Have you entered today meals yet? Do it now.',
@@ -1137,7 +1162,9 @@ function calcMonth(ym){
   S.data.deposits.forEach(function(d){
     if(d.date.indexOf(ym) !== 0) return;
     if(!perMember[d.memberId]) return;
-    perMember[d.memberId].deposit += (parseFloat(d.amount) || 0);
+    var damt = parseFloat(d.amount) || 0;
+    if(d.type === 'refund') damt = -damt;
+    perMember[d.memberId].deposit += damt;
   });
 
   var totalMeals = 0;
@@ -1366,7 +1393,7 @@ function renderTabs(){
   var html = '<div id="mh-bottom-nav">';
   tabs.forEach(function(tb){
     html += '<button class="mh-nav-item ' + (S.tab===tb[0]?'active':'') + '" onclick="MH.setTab(\'' + tb[0] + '\')">';
-    html += '<span class="mh-nav-icon">' + tb[1] + '</span><span class="mh-nav-label">' + tb[2] + '</span>';
+    html += '<span class="mh-nav-icon-wrap"><span class="mh-nav-icon">' + tb[1] + '</span></span><span class="mh-nav-label">' + tb[2] + '</span>';
     html += '</button>';
   });
   html += '</div>';
@@ -1511,10 +1538,47 @@ function renderDashboard(){
     if(pm.otherShare > 0){
       html += '<div style="font-size:9.5px;color:var(--ink-soft);margin-top:3px;">' + t('dashboard.breakdownFood') + ' ৳' + fmtInt(pm.mealCost) + ' + ' + t('dashboard.breakdownOther') + ' ৳' + fmtInt(pm.otherShare) + '</div>';
     }
+    if(S.isAdmin && positive && pm.balance > 0){
+      html += '<button class="mh-btn mh-btn-ghost mh-btn-sm mh-btn-block" style="margin-top:8px;" onclick="MH.openRefundModal(\'' + m.id + '\')">' + t('dashboard.refundBtn') + '</button>';
+    }
     html += '</div>';
   });
   html += '</div></div>';
   return html;
+}
+
+/* ---------------- REFUND (surplus payback) ---------------- */
+function openRefundModal(memberId){
+  var mem = findMemberById(memberId);
+  if(!mem) return;
+  var c = calcMonth(S.ym);
+  var pm = c.perMember[memberId];
+  var maxAmt = pm ? Math.max(0, Math.round(pm.balance * 100) / 100) : 0;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal"><h3>' + t('dashboard.refundModalTitle') + '</h3>';
+  html += '<p>' + escapeHtml(mem.name) + ' &mdash; ' + t('dashboard.refundModalDesc') + ' (৳' + fmtNum(maxAmt) + ')</p>';
+  html += '<div class="mh-field"><label>' + t('deposits.dateLabel') + '</label><input id="mh-refund-date" type="date" value="' + todayStr() + '"></div>';
+  html += '<div class="mh-field"><label>' + t('deposits.amountLabel') + '</label><input id="mh-refund-amount" type="number" min="0" step="0.01" max="' + maxAmt + '" value="' + (maxAmt > 0 ? maxAmt : '') + '"></div>';
+  html += '<div class="mh-field"><label>' + t('deposits.noteLabel') + '</label><input id="mh-refund-note" type="text" placeholder="' + t('deposits.refundNotePlaceholder') + '"></div>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.confirmRefund(\'' + memberId + '\')">' + t('dashboard.refundBtn') + '</button>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+
+async function confirmRefund(memberId){
+  var dateEl = document.getElementById('mh-refund-date');
+  var amountEl = document.getElementById('mh-refund-amount');
+  var noteEl = document.getElementById('mh-refund-note');
+  var date = dateEl && dateEl.value ? dateEl.value : todayStr();
+  var amount = parseFloat(amountEl ? amountEl.value : '');
+  var note = noteEl ? noteEl.value.trim() : '';
+  if(!amount || amount <= 0){ showToast(t('toast.amountInvalid')); return; }
+  S.data.deposits.push({ id: uid(), memberId: memberId, date: date, amount: amount, note: note, type: 'refund' });
+  var mem = findMemberById(memberId);
+  logActivity('refund_add', (mem ? mem.name : '') + ' ৳' + fmtNum(amount));
+  var ok = await saveData();
+  closeModal();
+  if(ok){ render(); showToast(t('toast.refundAdded')); }
 }
 
 function statBox(num, label){
@@ -1554,6 +1618,14 @@ function renderMealsEntry(){
   if(members.length === 0){
     html += emptyState(t('meals.entryNoMembers'));
     return html;
+  }
+  if(S.isAdmin){
+    html += '<div class="mh-meal-entry-row" style="background:var(--paper-dark);border-radius:10px;padding:9px 10px;margin-bottom:8px;border-bottom:none;">';
+    html += '<div class="mh-meal-entry-who"><span style="font-size:12.5px;font-weight:700;">' + t('meals.bulkLabel') + '</span></div>';
+    html += '<div style="display:flex;gap:6px;align-items:center;">';
+    html += '<input id="mh-meal-bulk-value" class="mh-meal-entry-input" type="number" min="0" step="0.5" inputmode="decimal" placeholder="' + t('meals.bulkPlaceholder') + '">';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-sm" onclick="MH.applyBulkMeal(\'' + date + '\')">' + t('meals.bulkApplyBtn') + '</button>';
+    html += '</div></div>';
   }
   html += '<div class="mh-table-wrap" style="padding:2px 12px;">';
   var dayTotal = 0;
@@ -1867,6 +1939,7 @@ function renderSettings(){
     html += '<div style="text-align:center;font-family:\'Roboto Mono\',monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--green);padding:8px;background:var(--paper-dark);border-radius:8px;margin-bottom:10px;">' + escapeHtml(S.messCode) + '</div>';
     html += '</div>';
     html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.copyMessLink()">' + t('settings.copyLinkBtn') + '</button>';
+    html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.openQrModal()">' + t('settings.showQrBtn') + '</button>';
     html += '</div>';
   }
 
@@ -1933,6 +2006,12 @@ function renderSettings(){
   html += '<button id="mh-pdf-btn" class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.downloadReportPDF()">' + t('settings.pdfBtn') + '</button>';
   html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.shareReport()">' + t('common.shareBtn') + '</button>';
   html += '<div id="mh-print-report" class="mh-print-only"></div>';
+  html += '</div>';
+
+  html += '<div class="mh-section-title"><span>' + t('settings.galleryTitle') + '</span></div>';
+  html += '<div class="mh-card">';
+  html += '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">' + t('settings.galleryDesc') + '</p>';
+  html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openPhotoGallery()">' + t('settings.galleryBtn') + '</button>';
   html += '</div>';
 
   html += '<div class="mh-section-title"><span>' + t('settings.reminderTitle') + '</span></div>';
@@ -2308,6 +2387,21 @@ async function updateMeal(input){
   else { S.data.meals[date][memberId] = parseFloat(val); }
   var ok = await saveData();
   if(ok) render();
+}
+
+async function applyBulkMeal(date){
+  var input = document.getElementById('mh-meal-bulk-value');
+  var raw = input ? input.value.trim() : '';
+  if(raw === '' || isNaN(parseFloat(raw)) || parseFloat(raw) < 0){ showToast(t('toast.amountInvalid')); return; }
+  var val = parseFloat(raw);
+  var entryYm = date.slice(0,7);
+  var members = membersForMonth(entryYm).filter(function(m){ return m.active !== false; });
+  if(members.length === 0) return;
+  if(!window.confirm(t('meals.bulkConfirmA') + val + t('meals.bulkConfirmB'))) return;
+  if(!S.data.meals[date]) S.data.meals[date] = {};
+  members.forEach(function(m){ S.data.meals[date][m.id] = val; });
+  var ok = await saveData();
+  if(ok){ render(); showToast(t('meals.bulkAppliedToast')); }
 }
 
 async function addBazar(){
@@ -2840,6 +2934,79 @@ async function copyMessLink(){
   catch(e){ showToast(t('toast.copyFailed')); }
 }
 
+/* ---------------- QR CODE ---------------- */
+function openQrModal(){
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal" style="text-align:center;"><h3>' + t('settings.qrTitle') + '</h3>';
+  html += '<p>' + t('settings.qrDesc') + '</p>';
+  html += '<div id="mh-qr-canvas" style="display:flex;align-items:center;justify-content:center;min-height:200px;margin:14px 0;"></div>';
+  html += '<div style="font-family:\'Roboto Mono\',monospace;font-size:17px;font-weight:700;letter-spacing:3px;color:var(--green);margin-bottom:14px;">' + escapeHtml(S.messCode || '') + '</div>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+  setTimeout(function(){
+    var container = document.getElementById('mh-qr-canvas');
+    if(!container) return;
+    try {
+      if(window.QRCode){
+        new QRCode(container, {
+          text: messShareLink(), width: 200, height: 200,
+          colorDark: '#2B2620', colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        container.innerHTML = '<div style="font-size:12px;color:var(--rust);padding:0 10px;">' + t('settings.qrError') + '</div>';
+      }
+    } catch(e){
+      container.innerHTML = '<div style="font-size:12px;color:var(--rust);padding:0 10px;">' + t('settings.qrError') + '</div>';
+    }
+  }, 30);
+}
+
+/* ---------------- RECEIPT PHOTO GALLERY ---------------- */
+function collectGalleryItems(){
+  var items = [];
+  S.data.bazar.forEach(function(b){
+    if(b.photo) items.push({ date: b.date, amount: b.amount, label: b.item || t('tabs.bazar'), photo: b.photo });
+  });
+  S.data.expenses.forEach(function(x){
+    if(x.photo) items.push({ date: x.date, amount: x.amount, label: t('categories.' + x.category) + (x.note ? (' - ' + x.note) : ''), photo: x.photo });
+  });
+  items.sort(function(a,b){ return b.date.localeCompare(a.date); });
+  return items;
+}
+function openPhotoGallery(){
+  var items = collectGalleryItems();
+  S._galleryItems = items;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal" style="max-width:420px;"><h3>' + t('settings.galleryTitle') + '</h3>';
+  if(items.length === 0){
+    html += emptyState(t('settings.galleryEmpty'));
+  } else {
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow-y:auto;">';
+    items.forEach(function(it, idx){
+      html += '<div style="cursor:pointer;" onclick="MH.viewGalleryPhoto(' + idx + ')">';
+      html += '<img src="' + it.photo + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--rule);">';
+      html += '<div style="font-size:9.5px;color:var(--ink-soft);margin-top:2px;text-align:center;">' + escapeHtml(it.date.slice(5)) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:14px;" onclick="MH.closeModal()">' + t('common.cancelBtn') + '</button></div>';
+  overlay.innerHTML = html;
+}
+function viewGalleryPhoto(idx){
+  var items = S._galleryItems || [];
+  var it = items[idx];
+  if(!it) return;
+  var overlay = ensureOverlay();
+  var html = '<div class="mh-modal mh-photo-modal">';
+  html += '<img src="' + it.photo + '">';
+  html += '<div style="text-align:center;margin-top:10px;font-size:12.5px;color:var(--ink-soft);">' + escapeHtml(it.label || '') + ' &middot; ' + it.date + ' &middot; ৳' + fmtNum(it.amount) + '</div>';
+  html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:12px;" onclick="MH.openPhotoGallery()">' + t('settings.galleryBackBtn') + '</button>';
+  html += '</div>';
+  overlay.innerHTML = html;
+}
+
 async function shareReport(){
   var c = calcMonth(S.ym);
   var lines = [];
@@ -3012,7 +3179,7 @@ window.MH = {
   openAdminModal: openAdminModal, closeModal: closeModal, setupPin: setupPin, checkPin: checkPin, logoutAdmin: logoutAdmin,
   openChangeAdminModal: openChangeAdminModal, confirmChangeAdmin: confirmChangeAdmin,
   openForgotPinModal: openForgotPinModal, confirmForgotPin: confirmForgotPin,
-  updateMeal: updateMeal, addBazar: addBazar, deleteBazar: deleteBazar, addExpense: addExpense, deleteExpense: deleteExpense,
+  updateMeal: updateMeal, applyBulkMeal: applyBulkMeal, addBazar: addBazar, deleteBazar: deleteBazar, addExpense: addExpense, deleteExpense: deleteExpense,
   addDeposit: addDeposit, deleteDeposit: deleteDeposit,
   openEditBazarModal: openEditBazarModal, saveEditBazar: saveEditBazar,
   openEditExpenseModal: openEditExpenseModal, saveEditExpense: saveEditExpense,
@@ -3025,11 +3192,14 @@ window.MH = {
   openMyProfileModal: openMyProfileModal, saveMyProfile: saveMyProfile,
   openChangePinOnlyModal: openChangePinOnlyModal, confirmChangePinOnly: confirmChangePinOnly, cancelAdminModal: cancelAdminModal,
   shareReport: shareReport, openEntryPhoto: openEntryPhoto,
+  openRefundModal: openRefundModal, confirmRefund: confirmRefund,
+  openQrModal: openQrModal, openPhotoGallery: openPhotoGallery, viewGalleryPhoto: viewGalleryPhoto,
   toggleReminder: toggleReminder, setReminderTime: setReminderTime,
   downloadData: downloadData, copyData: copyData, handleUploadFile: handleUploadFile, handleUploadPaste: handleUploadPaste,
   applyImport: applyImport,
   syncOnboardName: syncOnboardName, addOnboardMember: addOnboardMember, removeOnboardMember: removeOnboardMember, finishOnboarding: finishOnboarding,
   renderWelcome: renderWelcome, renderJoinPrompt: renderJoinPrompt, startCreateMess: startCreateMess, confirmJoinMess: confirmJoinMess,
+  openRecentMess: openRecentMess, removeRecentMess: removeRecentMess,
   copyMessLink: copyMessLink
 };
 
