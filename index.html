@@ -1520,7 +1520,7 @@ function renderDashboard(){
 
   html += '<div class="mh-section-title"><span>' + t('dashboard.membersSection') + '</span><span class="mh-eyebrow">' + ymLabel(S.ym) + '</span></div>';
   html += '<div class="mh-rack"><div class="mh-rail"></div><div class="mh-tag-grid">';
-  c.members.forEach(function(m){
+  c.members.filter(function(m){ return m.active !== false; }).forEach(function(m){
     var pm = c.perMember[m.id];
     var positive = pm.balance >= 0;
     var color = positive ? 'var(--green)' : 'var(--rust)';
