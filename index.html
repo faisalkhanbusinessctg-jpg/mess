@@ -940,6 +940,18 @@ function findMemberById(id){
 }
 function activeMembers(){ return S.data.members.filter(function(m){ return m.active !== false; }); }
 function archivedMembers(){ return S.data.members.filter(function(m){ return m.active === false; }); }
+function archivedMembersForMonth(ym){
+  return archivedMembers().filter(function(m){
+    var hasMeal = Object.keys(S.data.meals).some(function(date){
+      return date.indexOf(ym) === 0 && S.data.meals[date][m.id] !== undefined;
+    });
+    if(hasMeal) return true;
+    var hasDeposit = S.data.deposits.some(function(d){ return d.date.indexOf(ym) === 0 && d.memberId === m.id; });
+    if(hasDeposit) return true;
+    var hasBazar = S.data.bazar.some(function(b){ return b.date.indexOf(ym) === 0 && b.memberId === m.id; });
+    return hasBazar;
+  });
+}
 
 /* members relevant to a given month: everyone currently active,
    plus anyone archived who still has meal/deposit records that month
@@ -1880,7 +1892,7 @@ function renderMembers(){
   }
   html += '</div>';
 
-  var arch = archivedMembers();
+  var arch = archivedMembersForMonth(S.ym);
   if(arch.length > 0){
     html += '<div class="mh-section-title"><span>' + t('members.archivedSection') + '</span><span class="mh-eyebrow">' + t('members.archivedEyebrow') + '</span></div>';
     html += '<div class="mh-card">';
