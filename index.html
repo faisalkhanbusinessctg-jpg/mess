@@ -1970,7 +1970,7 @@ function renderSettings(){
       html += '<button class="mh-btn mh-btn-ghost mh-btn-block" onclick="MH.openMyProfileModal()">' + t('profile.editBtn') + '</button>';
       html += '<button class="mh-btn mh-btn-ghost mh-btn-block" style="margin-top:8px;" onclick="MH.logoutIdentity()">' + t('profile.logoutBtn') + '</button>';
     } else {
-      html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openLoginModal(true)">' + t('login.loginBtn') + '</button>';
+      html += '<button class="mh-btn mh-btn-primary mh-btn-block" onclick="MH.openLoginModal(false)">' + t('login.loginBtn') + '</button>';
     }
     html += '</div>';
   }
@@ -2174,10 +2174,16 @@ function closeModal(force){
   if(el) el.remove();
 }
 function cancelAdminModal(){
-  if(S.modalLocked){ openLoginModal(true); } else { closeModal(); }
+  if(S.modalLocked && LOGIN_GATE_ENABLED){ openLoginModal(true); } else { S.modalLocked = false; closeModal(); }
 }
 
+/* ===== লগইন গেট চালু/বন্ধ =====
+   false = বন্ধ (ফোন নম্বর/পাসওয়ার্ড ছাড়াই সবাই ঢুকতে পারবে)
+   true  = চালু (আগের মতো লগইন বাধ্যতামূলক) */
+var LOGIN_GATE_ENABLED = false;
+
 async function maybeShowLoginGate(){
+  if(!LOGIN_GATE_ENABLED) return;
   if(!isSetupComplete()) return;
   if(S.isAdmin) return;
   var mem = S.localIdentityId ? findMemberById(S.localIdentityId) : null;
@@ -2224,7 +2230,7 @@ async function logoutIdentity(){
   S.localIdentityId = null;
   try { await window.storage.set(localIdentityKeyFor(S.messCode), '', false); } catch(e){}
   render();
-  openLoginModal(true);
+  if(LOGIN_GATE_ENABLED) openLoginModal(true);
 }
 
 function openMyProfileModal(){
