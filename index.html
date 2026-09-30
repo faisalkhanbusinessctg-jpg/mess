@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>মেস হিসাব</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F6F4E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="মেস হিসাব">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 
@@ -3233,5 +3241,73 @@ window.MH = {
 })();
 </script>
 
+
+<script>
+/* ---------------- PWA: মোবাইলে ইনস্টল ---------------- */
+(function(){
+  // Service Worker রেজিস্টার (শুধু https বা localhost-এ কাজ করে)
+  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if(standalone) return; // ইতিমধ্যে ইনস্টল করা অ্যাপ থেকে খোলা হয়েছে
+
+  var deferred = null;
+  var DISMISS_KEY = 'messhishab-install-dismissed';
+  function dismissed(){ try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch(e){ return false; } }
+
+  function removeBar(){ var b = document.getElementById('mh-install-bar'); if(b) b.remove(); }
+  function showBar(msg, btnText, onBtn){
+    if(dismissed() || document.getElementById('mh-install-bar')) return;
+    var bar = document.createElement('div');
+    bar.id = 'mh-install-bar';
+    bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:99999;background:#2F6F4E;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;font-size:14px;line-height:1.4;';
+    var txt = document.createElement('div');
+    txt.style.cssText = 'flex:1;';
+    txt.textContent = msg;
+    bar.appendChild(txt);
+    if(btnText){
+      var b = document.createElement('button');
+      b.textContent = btnText;
+      b.style.cssText = 'background:#D9A441;color:#2B2620;border:0;border-radius:10px;padding:8px 14px;font-weight:700;font-family:inherit;font-size:14px;';
+      b.onclick = onBtn;
+      bar.appendChild(b);
+    }
+    var x = document.createElement('button');
+    x.textContent = '✕';
+    x.setAttribute('aria-label','বন্ধ করুন');
+    x.style.cssText = 'background:transparent;color:#fff;border:0;font-size:18px;padding:4px 6px;';
+    x.onclick = function(){ try { localStorage.setItem(DISMISS_KEY,'1'); } catch(e){} removeBar(); };
+    bar.appendChild(x);
+    document.body.appendChild(bar);
+  }
+
+  // Android / Chrome
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferred = e;
+    showBar('মেস হিসাব অ্যাপ হিসেবে ফোনে ইনস্টল করুন', 'ইনস্টল করুন', function(){
+      if(!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.finally(function(){ deferred = null; removeBar(); });
+    });
+  });
+  window.addEventListener('appinstalled', removeBar);
+
+  // iPhone / iPad (Safari)
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isSafari = /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
+  if(isIOS && isSafari){
+    window.addEventListener('load', function(){
+      setTimeout(function(){
+        showBar('ইনস্টল করতে Safari-র Share (⬆️) বাটনে চাপ দিয়ে "Add to Home Screen" বেছে নিন', null, null);
+      }, 2500);
+    });
+  }
+})();
+</script>
 </body>
 </html>
